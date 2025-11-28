@@ -67,10 +67,10 @@ export default async function ProfilePage() {
 
                     <div className="relative">
                         <div className="h-32 w-32 rounded-full border-4 border-background shadow-xl overflow-hidden bg-white">
-                            {profile?.avatar_url ? (
+                            {(profile as any)?.avatar_url ? (
                                 <img
-                                    src={profile.avatar_url}
-                                    alt={profile.full_name || 'User'}
+                                    src={(profile as any).avatar_url}
+                                    alt={(profile as any).full_name || 'User'}
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
@@ -83,7 +83,7 @@ export default async function ProfilePage() {
                     </div>
 
                     <div className="flex-1 text-center md:text-left space-y-2">
-                        <h1 className="text-3xl font-bold">{profile?.full_name || 'Học viên mới'}</h1>
+                        <h1 className="text-3xl font-bold">{(profile as any)?.full_name || 'Học viên mới'}</h1>
                         <div className="flex flex-col md:flex-row items-center gap-4 text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4" />

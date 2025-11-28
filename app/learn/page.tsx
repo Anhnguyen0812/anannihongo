@@ -43,7 +43,7 @@ export default async function LearnDashboard() {
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {courses?.map((course) => (
+                    {(courses as any)?.map((course: any) => (
                         <Link
                             key={course.id}
                             href={`/learn/${course.id}`}

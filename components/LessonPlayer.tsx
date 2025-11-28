@@ -6,22 +6,13 @@ import { Check, ChevronRight, ChevronLeft, FileText, Video, Menu, X, CheckCircle
 import { completeLesson, uncompleteLesson } from '@/app/learn/actions'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-interface Lesson {
-    id: number
-    title: string
-    drive_file_id: string
-    type: 'video' | 'pdf'
-    lesson_order: number
-    is_completed?: boolean
-    section?: string
-}
+import { Lesson, Course, OrganizedLessons, FolderNode } from '@/types'
 
 interface LessonPlayerProps {
     currentLesson: Lesson
     allLessons: Lesson[]
-    organizedLessons: Record<string, any>
-    course: any
+    organizedLessons: OrganizedLessons
+    course: Course
     user: any
 }
 
@@ -34,18 +25,18 @@ const FolderItem = ({
     level = 0
 }: {
     name: string
-    content: any
+    content: FolderNode
     courseId: string
     currentLessonId: number
     level?: number
 }) => {
     // Check if current lesson is inside this folder or its subfolders
-    const containsCurrentLesson = (folderContent: any): boolean => {
-        if (folderContent._lessons?.some((l: Lesson) => l.id === currentLessonId)) {
+    const containsCurrentLesson = (folderContent: FolderNode): boolean => {
+        if (folderContent._lessons?.some((l) => l.id === currentLessonId)) {
             return true
         }
         if (folderContent._children) {
-            return Object.values(folderContent._children).some((child: any) => containsCurrentLesson(child))
+            return Object.values(folderContent._children).some((child) => containsCurrentLesson(child))
         }
         return false
     }
@@ -91,7 +82,7 @@ const FolderItem = ({
                         {/* Render Sub-folders (Sorted Alphabetically) */}
                         {hasChildren && Object.entries(content._children)
                             .sort(([a], [b]) => a.localeCompare(b, 'vi', { numeric: true }))
-                            .map(([childName, childContent]: [string, any]) => (
+                            .map(([childName, childContent]) => (
                                 <FolderItem
                                     key={childName}
                                     name={childName}
@@ -106,8 +97,8 @@ const FolderItem = ({
                         {hasLessons && (
                             <div className="space-y-1 mt-1 mb-2">
                                 {content._lessons
-                                    .sort((a: Lesson, b: Lesson) => a.title.localeCompare(b.title, 'vi', { numeric: true }))
-                                    .map((lesson: Lesson) => (
+                                    .sort((a, b) => a.title.localeCompare(b.title, 'vi', { numeric: true }))
+                                    .map((lesson) => (
                                         <Link
                                             key={lesson.id}
                                             href={`/learn/${courseId}/${lesson.id}`}
@@ -125,7 +116,7 @@ const FolderItem = ({
                                                 <div className="mt-0.5 shrink-0">
                                                     {lesson.is_completed ? (
                                                         <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                                    ) : lesson.type === 'video' ? (
+                                                    ) : lesson.video_url || lesson.drive_file_id ? (
                                                         <Video className={`h-4 w-4 ${lesson.id === currentLessonId ? 'text-primary fill-primary/20' : ''}`} />
                                                     ) : (
                                                         <FileText className={`h-4 w-4 ${lesson.id === currentLessonId ? 'text-primary fill-primary/20' : ''}`} />
@@ -163,7 +154,7 @@ export default function LessonPlayer({
 
     // Flatten lessons based on sorted tree structure
     const sortedFlatLessons = useMemo(() => {
-        const getSortedFlatLessons = (organized: any): Lesson[] => {
+        const getSortedFlatLessons = (organized: OrganizedLessons): Lesson[] => {
             let lessons: Lesson[] = []
 
             const sortedFolders = Object.entries(organized).sort(([a], [b]) =>
@@ -178,7 +169,7 @@ export default function LessonPlayer({
 
                 // 2. Get lessons from current folder
                 if (content._lessons) {
-                    const sorted = [...content._lessons].sort((a: Lesson, b: Lesson) =>
+                    const sorted = [...content._lessons].sort((a, b) =>
                         a.title.localeCompare(b.title, 'vi', { numeric: true })
                     )
                     lessons = [...lessons, ...sorted]
@@ -304,8 +295,8 @@ export default function LessonPlayer({
                                         {currentLesson.title}
                                     </h1>
                                     <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-muted-foreground mt-0.5">
-                                        {currentLesson.type === 'video' ? <Video className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
-                                        <span>{currentLesson.type === 'video' ? 'Video' : 'PDF'}</span>
+                                        {currentLesson.video_url || currentLesson.drive_file_id ? <Video className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
+                                        <span>{currentLesson.video_url || currentLesson.drive_file_id ? 'Video' : 'PDF'}</span>
                                         <span className="text-border">|</span>
                                         <span>Bài {currentLesson.lesson_order}</span>
                                     </div>

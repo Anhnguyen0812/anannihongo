@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import LessonPlayer from '@/components/LessonPlayer'
+import { Lesson, Course, Progress, OrganizedLessons, FolderNode } from '@/types'
 
 interface PageProps {
     params: Promise<{
@@ -10,8 +11,8 @@ interface PageProps {
 }
 
 // Helper function to organize lessons by section hierarchy
-function organizeLessons(lessons: any[]) {
-    const root: Record<string, any> = {}
+function organizeLessons(lessons: Lesson[]): OrganizedLessons {
+    const root: OrganizedLessons = {}
 
     lessons.forEach(lesson => {
         const sectionPath = lesson.section || 'Khác'
@@ -45,9 +46,8 @@ async function getLessonData(courseId: string, lessonId: string) {
 
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
-
     if (!user) {
-        redirect('/login?redirectTo=/learn/' + courseId + '/' + lessonId)
+        redirect(`/login?redirectTo=/learn/${courseId}/${lessonId}`)
     }
 
     // Get current lesson
@@ -79,20 +79,22 @@ async function getLessonData(courseId: string, lessonId: string) {
         .select('lesson_id, is_completed, last_watched_at')
         .eq('user_id', user.id)
 
-    // Create a map of lesson progress
-    const progressMap = new Map(
+    // Create map of progress
+    const progressMap = new Map<number, Partial<Progress>>(
         (progressData as any)?.map((p: any) => [p.lesson_id, p]) || []
     )
 
-    // Merge progress with lessons
-    // @ts-ignore
-    const lessonsWithProgress = allLessons?.map(lesson => ({
-        ...lesson,
-        // @ts-ignore
-        is_completed: progressMap.get(lesson.id)?.is_completed || false,
-        // @ts-ignore
-        last_watched_at: progressMap.get(lesson.id)?.last_watched_at,
-    })) || []
+    // Merge progress into lessons
+    const lessonsWithProgress: Lesson[] =
+        (allLessons as any)?.map((lesson: any) => {
+            const progress = progressMap.get(lesson.id)
+
+            return {
+                ...lesson,
+                is_completed: progress?.is_completed ?? false,
+                last_watched_at: progress?.last_watched_at ?? null,
+            }
+        }) || []
 
     // Get course info
     const { data: course } = await supabase
@@ -101,11 +103,15 @@ async function getLessonData(courseId: string, lessonId: string) {
         .eq('id', courseId)
         .single()
 
+    if (!course) {
+        notFound()
+    }
+
     return {
-        currentLesson,
+        currentLesson: currentLesson as Lesson,
         allLessons: lessonsWithProgress,
         organizedLessons: organizeLessons(lessonsWithProgress),
-        course,
+        course: course as Course,
         user,
     }
 }

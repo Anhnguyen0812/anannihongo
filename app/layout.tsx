@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className="scroll-smooth">
+    <html lang="ja" className="scroll-smooth mdl-js" suppressHydrationWarning>
       <body
         className={`${notoSansJP.variable} font-sans antialiased`}
       >

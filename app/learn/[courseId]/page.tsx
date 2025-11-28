@@ -31,12 +31,12 @@ export default async function CoursePage({ params }: PageProps) {
         const { data: lesson } = await supabase
             .from('lessons')
             .select('id')
-            .eq('id', lastProgress.lesson_id)
+            .eq('id', (lastProgress as any).lesson_id)
             .eq('course_id', courseId)
             .single()
 
         if (lesson) {
-            redirect(`/learn/${courseId}/${lesson.id}`)
+            redirect(`/learn/${courseId}/${(lesson as any).id}`)
         }
     }
 
@@ -50,7 +50,7 @@ export default async function CoursePage({ params }: PageProps) {
         .single()
 
     if (firstLesson) {
-        redirect(`/learn/${courseId}/${firstLesson.id}`)
+        redirect(`/learn/${courseId}/${(firstLesson as any).id}`)
     }
 
     // 3. If no lessons found
