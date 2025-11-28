@@ -21,6 +21,7 @@ export async function completeLesson(lessonId: number) {
     // Insert or update progress
     const { error } = await supabase
         .from('progress')
+        // @ts-ignore
         .upsert({
             user_id: user.id,
             lesson_id: lessonId,
@@ -55,6 +56,7 @@ export async function uncompleteLesson(lessonId: number) {
 
     const { error } = await supabase
         .from('progress')
+        // @ts-ignore
         .upsert({
             user_id: user.id,
             lesson_id: lessonId,

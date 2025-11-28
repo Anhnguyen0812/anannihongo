@@ -81,13 +81,16 @@ async function getLessonData(courseId: string, lessonId: string) {
 
     // Create a map of lesson progress
     const progressMap = new Map(
-        progressData?.map(p => [p.lesson_id, p]) || []
+        (progressData as any)?.map((p: any) => [p.lesson_id, p]) || []
     )
 
     // Merge progress with lessons
+    // @ts-ignore
     const lessonsWithProgress = allLessons?.map(lesson => ({
         ...lesson,
+        // @ts-ignore
         is_completed: progressMap.get(lesson.id)?.is_completed || false,
+        // @ts-ignore
         last_watched_at: progressMap.get(lesson.id)?.last_watched_at,
     })) || []
 

@@ -28,9 +28,9 @@ export default function Navbar({ user, profile }: NavbarProps) {
                         <motion.div
                             whileHover={{ rotate: 360 }}
                             transition={{ duration: 0.5 }}
-                            className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+                            className="flex h-10 w-10 items-center justify-center"
                         >
-                            <span className="text-xl font-bold jp-text">日</span>
+                            <img src="/logo.svg" alt="AnAn Nihongo Logo" className="h-full w-full" />
                         </motion.div>
                         <span className="text-xl font-bold text-foreground hidden sm:block group-hover:text-primary transition-colors">
                             AnAn Nihongo

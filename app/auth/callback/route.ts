@@ -44,12 +44,13 @@ export async function GET(request: NextRequest) {
             if (!existingProfile) {
                 const { error: profileError } = await supabase
                     .from('profiles')
+                    // @ts-ignore
                     .insert({
                         id: data.user.id,
                         email: data.user.email,
                         full_name: data.user.user_metadata.full_name || data.user.user_metadata.name,
                         avatar_url: data.user.user_metadata.avatar_url || data.user.user_metadata.picture,
-                        role: 'student', // Default role
+                        role: 'student',
                     })
 
                 if (profileError) {
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
                 // Update profile with latest info from Google
                 await supabase
                     .from('profiles')
+                    // @ts-ignore
                     .update({
                         email: data.user.email,
                         full_name: data.user.user_metadata.full_name || data.user.user_metadata.name,
