@@ -42,6 +42,9 @@ export async function updateSession(request: NextRequest) {
         request,
     })
 
+    // Check if this is a session-only login (no "Remember me")
+    const isSessionOnly = request.cookies.get('session-only')?.value === 'true'
+
     const supabase = createServerClient(
         supabaseUrl,
         supabaseAnonKey,
@@ -58,7 +61,11 @@ export async function updateSession(request: NextRequest) {
                         request,
                     })
                     cookiesToSet.forEach(({ name, value, options }) => {
-                        supabaseResponse.cookies.set(name, value, options)
+                        // If session-only mode, remove maxAge to make cookies expire on browser close
+                        const cookieOptions = isSessionOnly 
+                            ? { ...options, maxAge: undefined, expires: undefined }
+                            : options
+                        supabaseResponse.cookies.set(name, value, cookieOptions)
                     })
                 },
             },

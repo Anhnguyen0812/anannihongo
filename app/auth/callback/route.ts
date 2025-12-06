@@ -71,8 +71,9 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Redirect to the original destination or /learn
-        return NextResponse.redirect(`${origin}${redirectTo}`)
+        // Redirect to a client-side handler to process rememberMe preference
+        // The handler will check localStorage and set appropriate cookies
+        return NextResponse.redirect(`${origin}/auth/callback/complete?redirectTo=${encodeURIComponent(redirectTo)}`)
     }
 
     // If no code, redirect to login with error

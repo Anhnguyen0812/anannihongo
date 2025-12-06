@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronRight, ChevronLeft, FileText, Video, Menu, X, CheckCircle2, ChevronDown, Folder } from 'lucide-react'
+import { Check, ChevronRight, ChevronLeft, FileText, Video, Menu, X, CheckCircle2, ChevronDown, Folder, Home, BookOpen, GraduationCap, User } from 'lucide-react'
 import { completeLesson, uncompleteLesson } from '@/app/learn/actions'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Lesson, Course, OrganizedLessons, FolderNode } from '@/types'
+import Chatbot from '@/components/Chatbot'
 
 interface LessonPlayerProps {
     currentLesson: Lesson
@@ -162,17 +163,17 @@ export default function LessonPlayer({
             )
 
             for (const [_, content] of sortedFolders) {
-                // 1. Recursively get lessons from sub-folders
-                if (content._children) {
-                    lessons = [...lessons, ...getSortedFlatLessons(content._children)]
-                }
-
-                // 2. Get lessons from current folder
+                // 1. First, get lessons from current folder (before sub-folders)
                 if (content._lessons) {
                     const sorted = [...content._lessons].sort((a, b) =>
                         a.title.localeCompare(b.title, 'vi', { numeric: true })
                     )
                     lessons = [...lessons, ...sorted]
+                }
+
+                // 2. Then, recursively get lessons from sub-folders
+                if (content._children) {
+                    lessons = [...lessons, ...getSortedFlatLessons(content._children)]
                 }
             }
             return lessons
@@ -206,20 +207,81 @@ export default function LessonPlayer({
     const nextLesson = currentIndex < sortedFlatLessons.length - 1 ? sortedFlatLessons[currentIndex + 1] : null
     const prevLesson = currentIndex > 0 ? sortedFlatLessons[currentIndex - 1] : null
 
+    // Calculate progress
+    const completedLessons = allLessons.filter(l => l.is_completed).length
+    const totalLessons = allLessons.length
+    const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+
     return (
         <div className="h-screen flex flex-col bg-background overflow-hidden">
             {/* Header */}
-            <header className="h-14 glass-card border-b border-border/40 flex items-center justify-between px-4 z-50 shrink-0">
-                <div className="flex items-center gap-4">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <span className="text-lg font-bold text-primary-foreground jp-text">日</span>
+            <header className="h-16 bg-white border-b border-border/50 shadow-sm flex items-center justify-between px-4 md:px-6 z-50 shrink-0">
+                {/* Left: Logo & Breadcrumb */}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <Link href="/" className="flex items-center gap-2 shrink-0 group">
+                        <div className="h-9 w-9 rounded-lg overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+                            <img src="/logo.svg" alt="AnAn Nihongo Logo" className="h-full w-full object-contain" />
                         </div>
-                        <span className="font-semibold hidden sm:inline text-sm">{course?.title}</span>
                     </Link>
+                    
+                    {/* Breadcrumb */}
+                    <nav className="hidden md:flex items-center gap-1 text-sm min-w-0">
+                        <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+                            <Home className="h-3.5 w-3.5" />
+                        </Link>
+                        <ChevronRight className="h-3.5 w-3.5 text-border shrink-0" />
+                        <Link href="/learn" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+                            <BookOpen className="h-3.5 w-3.5" />
+                            <span>Học</span>
+                        </Link>
+                        <ChevronRight className="h-3.5 w-3.5 text-border shrink-0" />
+                        <Link href={`/learn/${course?.id}`} className="text-muted-foreground hover:text-primary transition-colors truncate max-w-[120px]">
+                            {course?.title}
+                        </Link>
+                        <ChevronRight className="h-3.5 w-3.5 text-border shrink-0" />
+                        <span className="text-heading font-medium truncate max-w-[150px]">{currentLesson.title}</span>
+                    </nav>
+                    
+                    {/* Mobile: Course title */}
+                    <span className="md:hidden font-medium text-sm text-heading truncate">{course?.title}</span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                {/* Center: Progress Bar (Desktop) */}
+                <div className="hidden lg:flex items-center gap-3 px-4">
+                    <div className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-medium text-muted-foreground">Tiến độ</span>
+                    </div>
+                    <div className="w-32 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                        <motion.div 
+                            className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercent}%` }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                        />
+                    </div>
+                    <span className="text-xs font-semibold text-primary">{progressPercent}%</span>
+                    <span className="text-xs text-muted-foreground">({completedLessons}/{totalLessons})</span>
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                    {/* Progress Badge (Mobile) */}
+                    <div className="lg:hidden flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-full">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="text-xs font-semibold text-primary">{progressPercent}%</span>
+                    </div>
+                    
+                    {/* Profile Link */}
+                    <Link 
+                        href="/profile" 
+                        className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                    >
+                        <User className="h-4 w-4" />
+                        <span className="hidden xl:inline">Hồ sơ</span>
+                    </Link>
+                    
+                    {/* Sidebar Toggle */}
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className="p-2 hover:bg-primary/10 rounded-lg transition-colors lg:hidden"
@@ -286,19 +348,19 @@ export default function LessonPlayer({
                         </div>
 
                         {/* Compact Lesson Info & Controls */}
-                        <div className="mt-2 bg-card rounded-lg p-2 border border-border shadow-sm shrink-0">
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                        <div className="mt-3 bg-white rounded-xl p-4 border border-border/50 shadow-sm shrink-0">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
 
                                 {/* Left: Title & Info */}
                                 <div className="flex-1 min-w-0 text-center md:text-left w-full">
-                                    <h1 className="text-base font-bold text-foreground truncate" title={currentLesson.title}>
+                                    <h1 className="text-base font-bold text-heading truncate" title={currentLesson.title}>
                                         {currentLesson.title}
                                     </h1>
-                                    <div className="flex items-center justify-center md:justify-start gap-2 text-xs text-muted-foreground mt-0.5">
+                                    <div className="flex items-center justify-center md:justify-start gap-3 text-xs text-text-muted mt-1">
                                         {currentLesson.video_url || currentLesson.drive_file_id ? <Video className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
                                         <span>{currentLesson.video_url || currentLesson.drive_file_id ? 'Video' : 'PDF'}</span>
                                         <span className="text-border">|</span>
-                                        <span>Bài {currentLesson.lesson_order}</span>
+                                        <span>Bài {currentIndex + 1}</span>
                                     </div>
                                 </div>
 
@@ -356,16 +418,16 @@ export default function LessonPlayer({
                             animate={{ width: 320, opacity: 1 }}
                             exit={{ width: 0, opacity: 0 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="h-full bg-card border-l border-border/40 flex flex-col shrink-0 z-40 absolute lg:relative right-0 shadow-xl lg:shadow-none"
+                            className="h-full bg-white border-l border-border/50 flex flex-col shrink-0 z-40 absolute lg:relative right-0 shadow-xl lg:shadow-md"
                         >
-                            <div className="p-3 border-b border-border/40 flex items-center justify-between bg-card/50 backdrop-blur-sm sticky top-0 z-10 h-14">
-                                <h2 className="font-bold text-base">Nội dung</h2>
-                                <span className="text-[10px] font-medium px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                            <div className="p-4 border-b border-border/50 flex items-center justify-between bg-white sticky top-0 z-10 h-14">
+                                <h2 className="font-bold text-base text-heading">Nội dung</h2>
+                                <span className="text-xs font-medium px-2.5 py-1 bg-primary/10 text-primary rounded-full">
                                     {allLessons.length} bài
                                 </span>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
                                 {Object.entries(organizedLessons)
                                     .sort(([a], [b]) => a.localeCompare(b, 'vi', { numeric: true }))
                                     .map(([folderName, content]) => (
@@ -382,6 +444,11 @@ export default function LessonPlayer({
                     )}
                 </AnimatePresence>
             </div>
+            
+            {/* Chatbot with lesson context including video/file link */}
+            <Chatbot 
+                screenContext={`Khóa: ${course?.title?.slice(0, 30)}. Bài: ${currentLesson.title?.slice(0, 50)}. Link: https://drive.google.com/file/d/${currentLesson.drive_file_id}/view`}
+            />
         </div>
     )
 }

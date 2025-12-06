@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { PlayCircle, BookOpen, Clock } from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import ChatbotWrapper from '@/components/ChatbotWrapper'
 
 export default async function LearnDashboard() {
     const supabase = await createClient()
@@ -11,6 +13,13 @@ export default async function LearnDashboard() {
     if (!user) {
         redirect('/login?redirectTo=/learn')
     }
+
+    // Get user profile
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
 
     // Get courses
     const { data: courses } = await supabase
@@ -26,64 +35,85 @@ export default async function LearnDashboard() {
         .eq('is_completed', true)
 
     return (
-        <div className="min-h-screen bg-background p-6 md:p-12">
-            <div className="max-w-6xl mx-auto">
-                <header className="mb-12">
-                    <h1 className="text-3xl md:text-4xl font-bold mb-4">Khóa học của tôi</h1>
-                    <div className="flex items-center gap-6 text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                            <BookOpen className="h-5 w-5" />
-                            <span>{courses?.length || 0} Khóa học</span>
+        <div className="min-h-screen bg-background">
+            <Navbar user={user} profile={profile} />
+            
+            {/* Header Section */}
+            <div className="bg-white border-b border-border/50 shadow-sm">
+                <div className="zen-container py-10 md:py-14">
+                    <header>
+                        <h1 className="text-3xl md:text-4xl font-bold text-heading mb-6">Khóa học của tôi</h1>
+                        <div className="flex flex-wrap items-center gap-6 text-text-muted">
+                            <div className="flex items-center gap-2 bg-primary/5 px-4 py-2 rounded-full">
+                                <BookOpen className="h-5 w-5 text-primary" />
+                                <span className="font-medium">{courses?.length || 0} Khóa học</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-accent/10 px-4 py-2 rounded-full">
+                                <Clock className="h-5 w-5 text-accent" />
+                                <span className="font-medium">{completedCount || 0} Bài đã hoàn thành</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="h-5 w-5" />
-                            <span>{completedCount || 0} Bài đã hoàn thành</span>
-                        </div>
-                    </div>
-                </header>
+                    </header>
+                </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Courses Grid */}
+            <div className="zen-container py-12 md:py-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {(courses as any)?.map((course: any) => (
                         <Link
                             key={course.id}
                             href={`/learn/${course.id}`}
-                            className="group relative overflow-hidden rounded-2xl glass-card hover:border-primary/50 transition-all duration-300"
+                            className="course-card group"
                         >
-                            <div className="aspect-video bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                            <div className="aspect-video bg-gradient-to-br from-primary/10 via-indigo-100/50 to-accent/10 flex items-center justify-center overflow-hidden">
                                 {course.thumbnail_url ? (
                                     <img
                                         src={course.thumbnail_url}
                                         alt={course.title}
-                                        className="w-full h-full object-cover"
+                                        className="course-card-image w-full h-full object-cover transition-transform duration-500"
                                     />
                                 ) : (
-                                    <span className="text-4xl font-bold text-primary/40 jp-text">日本語</span>
+                                    <div className="flex flex-col items-center gap-3">
+                                        <BookOpen className="h-12 w-12 text-primary/40" />
+                                        <span className="text-3xl font-bold text-primary/30 jp-text">日本語</span>
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                            <div className="p-6 md:p-8">
+                                <h3 className="course-card-title text-xl font-bold text-heading mb-3 transition-colors duration-300">
                                     {course.title}
                                 </h3>
-                                <p className="text-muted-foreground line-clamp-2 text-sm mb-4">
-                                    {course.description || 'Học tiếng Nhật hiệu quả cùng Nihongo Master'}
+                                <p className="text-text-muted line-clamp-2 text-sm mb-6 leading-relaxed">
+                                    {course.description || 'Học tiếng Nhật hiệu quả cùng AnAn Nihongo'}
                                 </p>
 
-                                <div className="flex items-center text-primary font-medium text-sm">
-                                    <PlayCircle className="h-4 w-4 mr-2" />
+                                <div className="course-card-action flex items-center text-primary font-semibold text-sm transition-transform duration-300">
+                                    <PlayCircle className="h-5 w-5 mr-2 fill-primary/20" />
                                     Tiếp tục học
+                                    <svg className="w-4 h-4 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </div>
                             </div>
                         </Link>
                     ))}
 
                     {(!courses || courses.length === 0) && (
-                        <div className="col-span-full text-center py-12 text-muted-foreground">
-                            Chưa có khóa học nào. Vui lòng quay lại sau.
+                        <div className="col-span-full text-center py-20">
+                            <div className="bg-white rounded-2xl border border-zinc-200/80 p-16 shadow-sm">
+                                <div className="inline-flex items-center justify-center h-20 w-20 rounded-2xl bg-primary/5 mb-6">
+                                    <BookOpen className="h-10 w-10 text-primary/40" />
+                                </div>
+                                <h3 className="text-xl font-bold text-heading mb-3">Chưa có khóa học</h3>
+                                <p className="text-text-muted mb-6">Vui lòng quay lại sau để khám phá các khóa học mới.</p>
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
+            <ChatbotWrapper screenContext="Trang danh sách khóa học - Người dùng đang xem các khóa học có sẵn" />
         </div>
     )
 }

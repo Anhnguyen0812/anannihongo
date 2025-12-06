@@ -24,6 +24,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -41,131 +42,260 @@
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
+
+  /* ========================================
+   * AnAn Nihongo - Typography Scale
+   * Modern Japanese Learning Theme
+   * ======================================== */
+
+  /* Heading Typography */
+  --font-size-h1: 2.5rem;
+  /* 40px */
+  --line-height-h1: 1.2;
+  --font-weight-h1: 700;
+
+  --font-size-h2: 2rem;
+  /* 32px */
+  --line-height-h2: 1.25;
+  --font-weight-h2: 600;
+
+  --font-size-h3: 1.5rem;
+  /* 24px */
+  --line-height-h3: 1.35;
+  --font-weight-h3: 600;
+
+  --font-size-h4: 1.25rem;
+  /* 20px */
+  --line-height-h4: 1.4;
+  --font-weight-h4: 500;
+
+  /* Body Typography */
+  --font-size-body: 1rem;
+  /* 16px */
+  --line-height-body: 1.6;
+  --font-weight-body: 400;
+
+  --font-size-body-lg: 1.125rem;
+  /* 18px */
+  --line-height-body-lg: 1.7;
+
+  --font-size-small: 0.875rem;
+  /* 14px */
+  --line-height-small: 1.5;
+
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --line-height-xs: 1.4;
+
+  /* Custom Brand Colors */
+  --color-sakura: var(--sakura);
+  --color-sakura-light: var(--sakura-light);
+  --color-sakura-dark: var(--sakura-dark);
+  --color-indigo-deep: var(--indigo-deep);
+  --color-indigo-light: var(--indigo-light);
+  --color-heading: var(--heading);
+  --color-body-text: var(--body-text);
+  --color-text-muted: var(--text-muted);
 }
 
-/* Nihongo Master Design System - Modern Zen Aesthetic */
+/* ============================================
+ * AnAn Nihongo Design System
+ * Modern Japanese Learning Theme
+ * ============================================
+ * 
+ * Color Philosophy:
+ * - Background: Soft gray (zinc-50) - dịu mắt, không gắt
+ * - Text: Charcoal gray (slate-800/900) - đậm nhưng không harsh
+ * - Primary: Deep Indigo - tin cậy, thông thái
+ * - Accent: Sakura Pink - thân thiện, cute, Japanese vibe
+ * 
+ * Typography Philosophy:
+ * - Font: Noto Sans JP - hỗ trợ tiếng Nhật tốt
+ * - Clear hierarchy: H1 > H2 > H3 > Body
+ * - Headings: Bold, darker color
+ * - Body: Regular weight, slightly lighter
+ * ============================================ */
+
 :root {
   /* Radius - Soft, rounded corners */
   --radius: 1rem;
 
-  /* Background - Warm Stone/Paper feel for Light Mode */
-  --background: 250 250 249;
-  /* stone-50 */
-  --foreground: 28 25 23;
-  /* stone-900 */
+  /* ========================================
+   * Background Colors
+   * Không dùng trắng tinh (#fff)
+   * Dùng zinc-50 để dịu mắt hơn
+   * ======================================== */
+  --background: 250 250 250;
+  /* zinc-50 - #fafafa */
+  --foreground: 39 39 42;
+  /* zinc-800 - #27272a - main text */
 
-  /* Card - Slightly warmer white */
+  /* Text Hierarchy Colors */
+  --heading: 24 24 27;
+  /* zinc-900 - #18181b - for headings */
+  --body-text: 63 63 70;
+  /* zinc-700 - #3f3f46 - for paragraphs */
+  --text-muted: 113 113 122;
+  /* zinc-500 - #71717a - for secondary text */
+
+  /* Card - Slightly off-white với subtle shadow */
   --card: 255 255 255;
-  --card-foreground: 28 25 23;
+  /* white - cards nổi bật trên nền */
+  --card-foreground: 39 39 42;
 
   /* Popover */
   --popover: 255 255 255;
-  --popover-foreground: 28 25 23;
+  --popover-foreground: 39 39 42;
 
-  /* Primary - Deep Indigo (Japan Blue) */
-  --primary: 79 70 229;
-  /* indigo-600 */
+  /* ========================================
+   * Primary Brand Color - Deep Indigo
+   * Tạo cảm giác: tin cậy, thông thái, học thuật
+   * ======================================== */
+  --primary: 67 56 202;
+  /* indigo-700 - #4338ca - deep indigo */
   --primary-foreground: 255 255 255;
+  --indigo-deep: 55 48 163;
+  /* indigo-800 - for hover states */
+  --indigo-light: 99 102 241;
+  /* indigo-500 - for lighter accents */
 
-  /* Secondary - Soft Stone */
-  --secondary: 245 245 244;
-  /* stone-100 */
-  --secondary-foreground: 28 25 23;
+  /* Secondary - Warm Gray */
+  --secondary: 244 244 245;
+  /* zinc-100 */
+  --secondary-foreground: 39 39 42;
 
   /* Muted */
-  --muted: 245 245 244;
-  /* stone-100 */
-  --muted-foreground: 120 113 108;
-  /* stone-500 */
+  --muted: 244 244 245;
+  /* zinc-100 */
+  --muted-foreground: 113 113 122;
+  /* zinc-500 */
 
-  /* Accent - Sakura Pink / Red */
-  --accent: 244 63 94;
-  /* rose-500 */
+  /* ========================================
+   * Accent Color - Sakura Pink
+   * Tạo cảm giác: thân thiện, cute, Japanese
+   * Dùng cho: completion icons, highlights, logo
+   * ======================================== */
+  --accent: 244 114 182;
+  /* pink-400 - #f472b6 - sakura pink */
   --accent-foreground: 255 255 255;
+  --sakura: 244 114 182;
+  /* pink-400 */
+  --sakura-light: 251 207 232;
+  /* pink-200 - for backgrounds */
+  --sakura-dark: 236 72 153;
+  /* pink-500 - for hover */
 
   /* Destructive */
   --destructive: 239 68 68;
   /* red-500 */
   --destructive-foreground: 255 255 255;
 
-  /* Border */
-  --border: 231 229 228;
-  /* stone-200 */
-  --input: 231 229 228;
-  --ring: 79 70 229;
+  /* Border - Subtle gray */
+  --border: 228 228 231;
+  /* zinc-200 */
+  --input: 228 228 231;
+  --ring: 67 56 202;
+  /* indigo-700 */
 
-  /* Chart colors */
-  --chart-1: 12 138 23;
-  --chart-2: 173 250 29;
-  --chart-3: 197 30 58;
-  --chart-4: 43 45 66;
-  --chart-5: 255 165 0;
+  /* Chart colors - Japanese inspired palette */
+  --chart-1: 67 56 202;
+  /* indigo-700 */
+  --chart-2: 244 114 182;
+  /* sakura pink */
+  --chart-3: 34 197 94;
+  /* green-500 - success */
+  --chart-4: 251 191 36;
+  /* amber-400 - warning */
+  --chart-5: 99 102 241;
+  /* indigo-500 */
 
   /* Sidebar */
   --sidebar: 255 255 255;
-  --sidebar-foreground: 28 25 23;
-  --sidebar-primary: 79 70 229;
+  --sidebar-foreground: 39 39 42;
+  --sidebar-primary: 67 56 202;
   --sidebar-primary-foreground: 255 255 255;
-  --sidebar-accent: 245 245 244;
-  --sidebar-accent-foreground: 28 25 23;
-  --sidebar-border: 231 229 228;
-  --sidebar-ring: 79 70 229;
+  --sidebar-accent: 244 244 245;
+  --sidebar-accent-foreground: 39 39 42;
+  --sidebar-border: 228 228 231;
+  --sidebar-ring: 67 56 202;
 }
 
+/* ========================================
+ * Dark Mode Theme
+ * ======================================== */
 .dark {
-  /* Background - Deep Blue/Black for Dark Mode */
-  --background: 10 10 15;
-  /* Custom deep dark blue */
-  --foreground: 250 250 250;
+  /* Background - Deep blue-gray for dark mode */
+  --background: 9 9 11;
+  /* zinc-950 - #09090b */
+  --foreground: 244 244 245;
+  /* zinc-100 */
+
+  /* Text Hierarchy Colors - Dark Mode */
+  --heading: 250 250 250;
   /* zinc-50 */
-
-  /* Card - Darker shade with slight transparency */
-  --card: 17 17 24;
-  /* Slightly lighter than bg */
-  --card-foreground: 250 250 250;
-
-  /* Popover */
-  --popover: 17 17 24;
-  --popover-foreground: 250 250 250;
-
-  /* Primary - Lighter Indigo for contrast */
-  --primary: 99 102 241;
-  /* indigo-500 */
-  --primary-foreground: 255 255 255;
-
-  /* Secondary */
-  --secondary: 30 30 40;
-  --secondary-foreground: 250 250 250;
-
-  /* Muted */
-  --muted: 30 30 40;
-  --muted-foreground: 161 161 170;
+  --body-text: 212 212 216;
+  /* zinc-300 */
+  --text-muted: 161 161 170;
   /* zinc-400 */
 
-  /* Accent */
-  --accent: 251 113 133;
-  /* rose-400 */
-  --accent-foreground: 255 255 255;
+  /* Card */
+  --card: 24 24 27;
+  /* zinc-900 */
+  --card-foreground: 244 244 245;
+
+  /* Popover */
+  --popover: 24 24 27;
+  --popover-foreground: 244 244 245;
+
+  /* Primary - Lighter Indigo for dark mode */
+  --primary: 129 140 248;
+  /* indigo-400 - #818cf8 */
+  --primary-foreground: 24 24 27;
+  --indigo-deep: 99 102 241;
+  /* indigo-500 */
+  --indigo-light: 165 180 252;
+  /* indigo-300 */
+
+  /* Secondary */
+  --secondary: 39 39 42;
+  /* zinc-800 */
+  --secondary-foreground: 244 244 245;
+
+  /* Muted */
+  --muted: 39 39 42;
+  --muted-foreground: 161 161 170;
+
+  /* Accent - Lighter Sakura for dark mode */
+  --accent: 251 207 232;
+  /* pink-200 - lighter sakura */
+  --accent-foreground: 24 24 27;
+  --sakura: 249 168 212;
+  /* pink-300 */
+  --sakura-light: 252 231 243;
+  /* pink-100 */
+  --sakura-dark: 244 114 182;
+  /* pink-400 */
 
   /* Destructive */
-  --destructive: 127 29 29;
-  --destructive-foreground: 250 250 250;
+  --destructive: 248 113 113;
+  /* red-400 */
+  --destructive-foreground: 24 24 27;
 
   /* Border */
-  --border: 39 39 42;
-  /* zinc-800 */
-  --input: 39 39 42;
-  --ring: 99 102 241;
+  --border: 63 63 70;
+  /* zinc-700 */
+  --input: 63 63 70;
+  --ring: 129 140 248;
 
   /* Sidebar */
-  --sidebar: 10 10 15;
+  --sidebar: 9 9 11;
   --sidebar-foreground: 244 244 245;
-  --sidebar-primary: 99 102 241;
-  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-primary: 129 140 248;
+  --sidebar-primary-foreground: 24 24 27;
   --sidebar-accent: 39 39 42;
   --sidebar-accent-foreground: 244 244 245;
-  --sidebar-border: 39 39 42;
-  --sidebar-ring: 99 102 241;
+  --sidebar-border: 63 63 70;
+  --sidebar-ring: 129 140 248;
 }
 
 @layer base {
@@ -177,20 +307,281 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* ========================================
+   * Typography Hierarchy
+   * Noto Sans JP - Clear visual hierarchy
+   * ======================================== */
+
+  h1 {
+    font-size: var(--font-size-h1);
+    line-height: var(--line-height-h1);
+    font-weight: var(--font-weight-h1);
+    color: rgb(var(--heading));
+    letter-spacing: -0.025em;
+  }
+
+  h2 {
+    font-size: var(--font-size-h2);
+    line-height: var(--line-height-h2);
+    font-weight: var(--font-weight-h2);
+    color: rgb(var(--heading));
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-size: var(--font-size-h3);
+    line-height: var(--line-height-h3);
+    font-weight: var(--font-weight-h3);
+    color: rgb(var(--heading));
+    letter-spacing: -0.015em;
+  }
+
+  h4 {
+    font-size: var(--font-size-h4);
+    line-height: var(--line-height-h4);
+    font-weight: var(--font-weight-h4);
+    color: rgb(var(--heading));
+  }
+
+  p {
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    font-weight: var(--font-weight-body);
+    color: rgb(var(--body-text));
+  }
+
+  /* Large body text for lead paragraphs */
+  .lead {
+    font-size: var(--font-size-body-lg);
+    line-height: var(--line-height-body-lg);
+    color: rgb(var(--body-text));
+  }
+
+  /* Small text */
+  small,
+  .text-sm {
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-small);
+  }
+
+  /* Extra small text */
+  .text-xs {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-xs);
+  }
+
+  /* Muted/secondary text */
+  .text-muted {
+    color: rgb(var(--text-muted));
+  }
+
+  /* Links */
+  a {
+    color: rgb(var(--primary));
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: rgb(var(--indigo-deep));
+  }
+
+  /* Strong/bold text */
+  strong,
+  b {
+    font-weight: 600;
+    color: rgb(var(--heading));
+  }
 }
 
 /* Custom Utilities for Glassmorphism & Zen Feel */
 @layer utilities {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-lg;
+    @apply bg-white border border-zinc-200/80 shadow-lg;
   }
 
   .glass-card-hover {
-    @apply hover:bg-card/90 hover:shadow-xl transition-all duration-300;
+    @apply hover:shadow-xl transition-all duration-300;
   }
 
   .zen-container {
     @apply container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl;
+  }
+
+  /* ========================================
+   * Claymorphism Utilities
+   * Playful, 3D-like clay design
+   * ======================================== */
+  .clay-card {
+    @apply bg-white rounded-3xl;
+    box-shadow:
+      8px 8px 16px rgba(0, 0, 0, 0.08),
+      -4px -4px 12px rgba(255, 255, 255, 0.9),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.8),
+      inset -1px -1px 2px rgba(0, 0, 0, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .clay-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow:
+      12px 12px 24px rgba(0, 0, 0, 0.12),
+      -6px -6px 16px rgba(255, 255, 255, 0.95),
+      inset 1px 1px 3px rgba(255, 255, 255, 0.9),
+      inset -1px -1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .clay-button {
+    @apply rounded-2xl font-bold;
+    box-shadow:
+      4px 4px 10px rgba(0, 0, 0, 0.15),
+      -2px -2px 8px rgba(255, 255, 255, 0.8),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.5);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .clay-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      6px 6px 14px rgba(0, 0, 0, 0.18),
+      -3px -3px 10px rgba(255, 255, 255, 0.9),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+  }
+
+  .clay-button:active {
+    transform: translateY(1px);
+    box-shadow:
+      2px 2px 6px rgba(0, 0, 0, 0.12),
+      -1px -1px 4px rgba(255, 255, 255, 0.7),
+      inset 2px 2px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .clay-icon {
+    @apply rounded-2xl p-4;
+    box-shadow:
+      4px 4px 10px rgba(0, 0, 0, 0.1),
+      -2px -2px 8px rgba(255, 255, 255, 0.9),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+  }
+
+  .clay-badge {
+    @apply rounded-full px-4 py-2 font-medium;
+    box-shadow:
+      3px 3px 8px rgba(0, 0, 0, 0.08),
+      -2px -2px 6px rgba(255, 255, 255, 0.9),
+      inset 1px 1px 1px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Playful gradient backgrounds */
+  .gradient-playful-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .gradient-playful-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  .gradient-playful-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  .gradient-playful-4 {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  }
+
+  .gradient-playful-5 {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
+
+  .gradient-playful-6 {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  }
+
+  /* Floating animation for playful elements */
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes bounce-soft {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  @keyframes wiggle {
+
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-bounce-soft {
+    animation: bounce-soft 2s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
+  }
+
+  /* Shimmer animation for toast notifications */
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out;
+  }
+
+  /* Testimonial card special style */
+  .testimonial-card {
+    @apply bg-white rounded-3xl p-6;
+    box-shadow:
+      6px 6px 12px rgba(0, 0, 0, 0.06),
+      -3px -3px 10px rgba(255, 255, 255, 0.9),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+  }
+
+  /* Progress bar with clay effect */
+  .clay-progress {
+    @apply rounded-full bg-gray-100;
+    box-shadow:
+      inset 2px 2px 4px rgba(0, 0, 0, 0.08),
+      inset -1px -1px 3px rgba(255, 255, 255, 0.9);
+  }
+
+  .clay-progress-fill {
+    @apply rounded-full h-full;
+    box-shadow:
+      1px 1px 3px rgba(0, 0, 0, 0.1),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.3);
   }
 
   .zen-section {
@@ -201,28 +592,248 @@
     @apply rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md;
   }
 
+  /* ========================================
+   * Card Component Styles
+   * Modern, interactive card designs
+   * ======================================== */
+
+  /* Base card with lift effect on hover */
+  .card-interactive {
+    @apply rounded-2xl bg-white border border-zinc-200/80 shadow-sm;
+    @apply transition-all duration-300 ease-out;
+    @apply hover:-translate-y-1 hover:shadow-xl hover:border-primary/40;
+  }
+
+  .card-interactive:hover .card-title {
+    @apply text-primary;
+  }
+
+  .card-interactive:hover .card-icon {
+    @apply bg-primary text-white shadow-lg shadow-primary/30;
+  }
+
+  /* Course card specific */
+  .course-card {
+    @apply rounded-2xl bg-white border border-zinc-200/80 overflow-hidden;
+    @apply shadow-sm transition-all duration-300 ease-out;
+    @apply hover:-translate-y-1.5 hover:shadow-2xl hover:border-primary/50;
+  }
+
+  .course-card:hover .course-card-title {
+    @apply text-primary;
+  }
+
+  .course-card:hover .course-card-image {
+    @apply scale-105;
+  }
+
+  .course-card:hover .course-card-action {
+    @apply translate-x-1;
+  }
+
+  /* Feature card with icon animation */
+  .feature-card {
+    @apply rounded-2xl bg-background border border-zinc-200/70 p-8;
+    @apply shadow-sm transition-all duration-300 ease-out;
+    @apply hover:-translate-y-1 hover:shadow-xl hover:border-primary/40;
+  }
+
+  .feature-card:hover .feature-icon {
+    @apply bg-primary text-white scale-110 shadow-lg shadow-primary/30;
+  }
+
+  .feature-card:hover .feature-title {
+    @apply text-primary;
+  }
+
+  /* Stats card */
+  .stats-card {
+    @apply bg-white p-6 rounded-2xl border border-zinc-200/80;
+    @apply shadow-sm transition-all duration-300;
+    @apply hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5;
+  }
+
+  .stats-card:hover .stats-icon {
+    @apply scale-110;
+  }
+
+  /* Progress card */
+  .progress-card {
+    @apply bg-white p-6 md:p-8 rounded-2xl border border-zinc-200/80;
+    @apply shadow-sm transition-all duration-300 ease-out;
+    @apply hover:-translate-y-1 hover:shadow-xl hover:border-primary/40;
+  }
+
+  .progress-card:hover .progress-title {
+    @apply text-primary;
+  }
+
   .jp-text {
     font-family: var(--font-noto-sans-jp), sans-serif;
   }
 
+  /* ========================================
+   * Text Gradient Utilities
+   * Primary gradient: Indigo to Sakura
+   * ======================================== */
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
   }
 
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, rgb(var(--primary)) 0%, rgb(var(--indigo-light)) 100%);
+  }
+
+  .text-gradient-sakura {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, rgb(var(--sakura-dark)) 0%, rgb(var(--sakura)) 100%);
+  }
+
+  /* ========================================
+   * Typography Utility Classes
+   * Use these for custom heading styles
+   * ======================================== */
+  .heading-1 {
+    font-size: var(--font-size-h1);
+    line-height: var(--line-height-h1);
+    font-weight: var(--font-weight-h1);
+    color: rgb(var(--heading));
+    letter-spacing: -0.025em;
+  }
+
+  .heading-2 {
+    font-size: var(--font-size-h2);
+    line-height: var(--line-height-h2);
+    font-weight: var(--font-weight-h2);
+    color: rgb(var(--heading));
+    letter-spacing: -0.02em;
+  }
+
+  .heading-3 {
+    font-size: var(--font-size-h3);
+    line-height: var(--line-height-h3);
+    font-weight: var(--font-weight-h3);
+    color: rgb(var(--heading));
+    letter-spacing: -0.015em;
+  }
+
+  .heading-4 {
+    font-size: var(--font-size-h4);
+    line-height: var(--line-height-h4);
+    font-weight: var(--font-weight-h4);
+    color: rgb(var(--heading));
+  }
+
+  .body-text {
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    color: rgb(var(--body-text));
+  }
+
+  .body-text-lg {
+    font-size: var(--font-size-body-lg);
+    line-height: var(--line-height-body-lg);
+    color: rgb(var(--body-text));
+  }
+
+  /* ========================================
+   * Button Styles
+   * Updated with new color scheme
+   * ======================================== */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:bg-primary/90 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground;
+    @apply shadow-lg shadow-primary/25 transition-all duration-200;
+    @apply hover:bg-indigo-deep hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5;
+    @apply active:translate-y-0 active:shadow-md;
+    @apply disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl bg-secondary px-6 py-3 text-sm font-medium text-secondary-foreground transition-all hover:bg-secondary/80 hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-6 py-3 text-sm font-medium text-secondary-foreground;
+    @apply border border-zinc-200 transition-all duration-200;
+    @apply hover:bg-zinc-100 hover:border-zinc-300 hover:-translate-y-0.5;
+    @apply active:translate-y-0;
+    @apply disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-accent {
-    @apply inline-flex items-center justify-center rounded-xl bg-accent px-6 py-3 text-sm font-medium text-accent-foreground shadow-lg shadow-accent/25 transition-all hover:bg-accent/90 hover:shadow-accent/40 hover:-translate-y-0.5 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground;
+    @apply shadow-lg shadow-accent/25 transition-all duration-200;
+    @apply hover:bg-sakura-dark hover:shadow-xl hover:shadow-accent/30 hover:-translate-y-0.5;
+    @apply active:translate-y-0 active:shadow-md;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* Ghost button - subtle style */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-foreground;
+    @apply transition-all duration-200;
+    @apply hover:bg-zinc-100 hover:-translate-y-0.5;
+    @apply active:translate-y-0;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* Outline button with primary color border */
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 border-primary px-6 py-3 text-sm font-semibold text-primary;
+    @apply transition-all duration-200;
+    @apply hover:bg-primary hover:text-primary-foreground hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25;
+    @apply active:translate-y-0;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* Icon button - small circular button for icons */
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-xl p-2.5;
+    @apply bg-zinc-100 text-zinc-600 transition-all duration-200;
+    @apply hover:bg-primary hover:text-white hover:shadow-md hover:-translate-y-0.5;
+    @apply active:translate-y-0;
+  }
+
+  /* Link button - text only with underline effect */
+  .btn-link {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium text-primary;
+    @apply transition-all duration-200;
+    @apply hover:gap-2.5;
+  }
+
+  .btn-link::after {
+    content: '';
+    @apply block h-0.5 w-0 bg-primary transition-all duration-200;
+  }
+
+  .btn-link:hover::after {
+    @apply w-full;
   }
 
   .interactive-scale {
     @apply transition-transform duration-200 active:scale-95 hover:scale-105;
+  }
+
+  /* ========================================
+   * Accent/Sakura Specific Utilities
+   * For completion badges, success states
+   * ======================================== */
+  .badge-sakura {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+    background-color: rgb(var(--sakura-light));
+    color: rgb(var(--sakura-dark));
+  }
+
+  .badge-success {
+    @apply inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700;
+  }
+
+  .badge-primary {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+    background-color: rgb(var(--primary) / 0.1);
+    color: rgb(var(--primary));
+  }
+
+  /* Completion/check icon with sakura accent */
+  .icon-complete {
+    color: rgb(var(--sakura));
   }
 
   /* Custom Scrollbar for Sidebar */

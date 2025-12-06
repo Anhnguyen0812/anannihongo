@@ -137,12 +137,74 @@ export interface Database {
                     last_watched_at?: string
                 }
             }
+            notifications: {
+                Row: {
+                    id: number // bigint
+                    title: string
+                    content: string
+                    type: 'general' | 'course' | 'announcement'
+                    target_type: 'all' | 'selected'
+                    created_by: string | null // uuid
+                    created_at: string // timestamp
+                }
+                Insert: {
+                    id?: number
+                    title: string
+                    content: string
+                    type?: 'general' | 'course' | 'announcement'
+                    target_type?: 'all' | 'selected'
+                    created_by?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: number
+                    title?: string
+                    content?: string
+                    type?: 'general' | 'course' | 'announcement'
+                    target_type?: 'all' | 'selected'
+                    created_by?: string | null
+                    created_at?: string
+                }
+            }
+            user_notifications: {
+                Row: {
+                    id: number // bigint
+                    user_id: string // uuid
+                    notification_id: number // bigint
+                    is_read: boolean
+                    read_at: string | null // timestamp
+                    created_at: string // timestamp
+                }
+                Insert: {
+                    id?: number
+                    user_id: string
+                    notification_id: number
+                    is_read?: boolean
+                    read_at?: string | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: number
+                    user_id?: string
+                    notification_id?: number
+                    is_read?: boolean
+                    read_at?: string | null
+                    created_at?: string
+                }
+            }
         }
         Views: {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            send_notification_to_all: {
+                Args: { notification_id_param: number }
+                Returns: void
+            }
+            send_notification_to_users: {
+                Args: { notification_id_param: number; user_ids: string[] }
+                Returns: void
+            }
         }
         Enums: {
             [_ in never]: never
@@ -155,18 +217,24 @@ export type Profile = Database['public']['Tables']['profiles']['Row']
 export type Course = Database['public']['Tables']['courses']['Row']
 export type Lesson = Database['public']['Tables']['lessons']['Row']
 export type Progress = Database['public']['Tables']['progress']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type UserNotification = Database['public']['Tables']['user_notifications']['Row']
 
 // Insert types
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 export type CourseInsert = Database['public']['Tables']['courses']['Insert']
 export type LessonInsert = Database['public']['Tables']['lessons']['Insert']
 export type ProgressInsert = Database['public']['Tables']['progress']['Insert']
+export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
+export type UserNotificationInsert = Database['public']['Tables']['user_notifications']['Insert']
 
 // Update types
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 export type CourseUpdate = Database['public']['Tables']['courses']['Update']
 export type LessonUpdate = Database['public']['Tables']['lessons']['Update']
 export type ProgressUpdate = Database['public']['Tables']['progress']['Update']
+export type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
+export type UserNotificationUpdate = Database['public']['Tables']['user_notifications']['Update']
 
 // Extended types with relations (for joins)
 export type CourseWithLessons = Course & {
@@ -179,4 +247,9 @@ export type LessonWithProgress = Lesson & {
 
 export type CourseWithLessonsAndProgress = Course & {
     lessons: LessonWithProgress[]
+}
+
+// Notification with read status
+export type NotificationWithStatus = Notification & {
+    user_notifications: UserNotification | null
 }

@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import Navbar from '@/components/Navbar'
 import HomeContent from '@/components/HomeContent'
+import ChatbotWrapper from '@/components/ChatbotWrapper'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -24,6 +25,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background">
       <Navbar user={user} profile={profile} />
       <HomeContent user={user} />
+      <ChatbotWrapper screenContext="Trang chủ AnAn Nihongo - Nền tảng học tiếng Nhật trực tuyến" />
     </div>
   )
 }
