@@ -124,6 +124,8 @@ const FolderItem = ({
                                                 <div className="mt-0.5 shrink-0">
                                                     {lesson.is_completed ? (
                                                         <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                                    ) : /\.(pdf|docx?|pptx?|xlsx?)$/i.test(lesson.title || '') ? (
+                                                        <FileText className={`h-4 w-4 ${lesson.id === currentLessonId ? 'text-primary fill-primary/20' : ''}`} />
                                                     ) : lesson.video_url || lesson.drive_file_id ? (
                                                         <Video className={`h-4 w-4 ${lesson.id === currentLessonId ? 'text-primary fill-primary/20' : ''}`} />
                                                     ) : (
