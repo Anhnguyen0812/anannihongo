@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Bell, BookOpen, Megaphone, Info, CheckCircle, AlertCircle } from 'lucide-react'
+import { X, Bell } from 'lucide-react'
 
 // Toast types
 export type ToastType = 'general' | 'course' | 'announcement' | 'success' | 'error' | 'info'
@@ -31,62 +31,29 @@ export function useToast() {
     return context
 }
 
-// Toast Item Component - Clean minimal design
+// Toast Item Component - Minimal design with unified colors
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
-    const getIcon = () => {
-        switch (toast.type) {
-            case 'course': return <BookOpen className="w-4 h-4" />
-            case 'announcement': return <Megaphone className="w-4 h-4" />
-            case 'success': return <CheckCircle className="w-4 h-4" />
-            case 'error': return <AlertCircle className="w-4 h-4" />
-            case 'info': return <Info className="w-4 h-4" />
-            default: return <Bell className="w-4 h-4" />
-        }
-    }
-
-    const getAccentColor = () => {
-        switch (toast.type) {
-            case 'course': return 'text-indigo-500 bg-indigo-50'
-            case 'announcement': return 'text-rose-500 bg-rose-50'
-            case 'success': return 'text-emerald-500 bg-emerald-50'
-            case 'error': return 'text-red-500 bg-red-50'
-            case 'info': return 'text-blue-500 bg-blue-50'
-            default: return 'text-indigo-500 bg-indigo-50'
-        }
-    }
-
-    const getProgressColor = () => {
-        switch (toast.type) {
-            case 'course': return 'bg-indigo-500'
-            case 'announcement': return 'bg-rose-500'
-            case 'success': return 'bg-emerald-500'
-            case 'error': return 'bg-red-500'
-            case 'info': return 'bg-blue-500'
-            default: return 'bg-indigo-500'
-        }
-    }
-
     return (
         <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            initial={{ opacity: 0, y: -12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="relative bg-white rounded-xl shadow-lg border border-zinc-100 overflow-hidden max-w-sm w-full"
+            exit={{ opacity: 0, y: -12, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="relative bg-white rounded-lg shadow-md border border-zinc-200 overflow-hidden max-w-xs w-full"
         >
-            <div className="p-4">
+            <div className="p-3">
                 <div className="flex items-center gap-3">
-                    {/* Icon */}
-                    <div className={`p-2 rounded-lg shrink-0 ${getAccentColor()}`}>
-                        {getIcon()}
+                    {/* Icon - Simple, unified */}
+                    <div className="p-1.5 rounded-md bg-indigo-50 text-indigo-600 shrink-0">
+                        <Bell className="w-4 h-4" />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-zinc-900 text-sm">
+                        <h4 className="font-medium text-zinc-900 text-sm truncate">
                             {toast.title}
                         </h4>
-                        <p className="text-zinc-500 text-sm mt-0.5 line-clamp-2">
+                        <p className="text-zinc-500 text-xs mt-0.5 line-clamp-1">
                             {toast.message}
                         </p>
                     </div>
@@ -94,19 +61,19 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
                     {/* Close button */}
                     <button
                         onClick={onRemove}
-                        className="p-1 rounded-md hover:bg-zinc-100 transition-colors text-zinc-400 hover:text-zinc-600 shrink-0 self-start"
+                        className="p-1 rounded hover:bg-zinc-100 transition-colors text-zinc-400 hover:text-zinc-600 shrink-0"
                     >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
             </div>
 
-            {/* Progress bar */}
+            {/* Progress bar - unified indigo */}
             <motion.div
                 initial={{ scaleX: 1 }}
                 animate={{ scaleX: 0 }}
                 transition={{ duration: (toast.duration || 5000) / 1000, ease: 'linear' }}
-                className={`absolute bottom-0 left-0 right-0 h-0.5 ${getProgressColor()} origin-left`}
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 origin-left"
             />
         </motion.div>
     )
@@ -140,7 +107,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
         setToasts((prev) => [...prev, { ...toast, id }])
 
-        // Auto remove after duration
         setTimeout(() => {
             setToasts((prev) => prev.filter((t) => t.id !== id))
         }, duration)

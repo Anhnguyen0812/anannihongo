@@ -38,7 +38,8 @@ export default async function AdminLayout({
                         <h1 className="text-xl font-bold text-zinc-900">Admin</h1>
                     </div>
                     <p className="text-sm text-zinc-500 mt-1">
-                        Xin chào, {profile?.full_name || 'Admin'}
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        Xin chào, {(profile as any)?.full_name || 'Admin'}
                     </p>
                 </div>
 

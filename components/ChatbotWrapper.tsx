@@ -1,6 +1,13 @@
 "use client"
 
-import Chatbot from './Chatbot'
+import dynamic from 'next/dynamic'
+import { ChatbotSkeleton } from './skeletons'
+
+// Lazy load the heavy Chatbot component (26KB)
+const Chatbot = dynamic(() => import('./Chatbot'), {
+    loading: () => <ChatbotSkeleton />,
+    ssr: false,
+})
 
 interface ChatbotWrapperProps {
     screenContext?: string

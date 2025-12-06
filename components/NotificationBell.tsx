@@ -21,27 +21,21 @@ export default function NotificationBell() {
     // Request browser notification permission
     const requestNotificationPermission = useCallback(async () => {
         if (!('Notification' in window)) {
-            console.log('[Notification] Browser does not support notifications')
             return false
         }
 
-        console.log('[Notification] Current permission:', Notification.permission)
 
         if (Notification.permission === 'granted') {
             permissionRef.current = 'granted'
-            console.log('[Notification] Permission already granted')
             return true
         }
 
         if (Notification.permission !== 'denied') {
-            console.log('[Notification] Requesting permission...')
             const permission = await Notification.requestPermission()
             permissionRef.current = permission
-            console.log('[Notification] Permission result:', permission)
             return permission === 'granted'
         }
 
-        console.log('[Notification] Permission was denied')
         return false
     }, [])
 
@@ -170,7 +164,6 @@ export default function NotificationBell() {
 
                         // Show browser notification popup
                         const canShowNotif = permissionRef.current === 'granted' || Notification.permission === 'granted'
-                        console.log('[Notification] Attempting browser notification, permission:', permissionRef.current, 'API:', Notification.permission, 'canShow:', canShowNotif)
 
                         if (canShowNotif) {
                             const browserNotif = new Notification(newNotif.title, {
@@ -179,7 +172,6 @@ export default function NotificationBell() {
                                 badge: '/logo.svg',
                                 tag: `notification-${newNotif.id}`,
                             })
-                            console.log('[Notification] Browser notification created')
                             browserNotif.onclick = () => {
                                 window.focus()
                                 setIsOpen(true)
@@ -260,12 +252,9 @@ export default function NotificationBell() {
         }
     }
 
-    const getTypeColor = (type: string) => {
-        switch (type) {
-            case 'course': return 'text-indigo-500 bg-indigo-50'
-            case 'announcement': return 'text-rose-500 bg-rose-50'
-            default: return 'text-zinc-500 bg-zinc-100'
-        }
+    const getTypeColor = () => {
+        // Unified color scheme - all use indigo
+        return 'text-indigo-600 bg-indigo-50'
     }
 
     const formatTime = (dateString: string) => {
@@ -342,7 +331,7 @@ export default function NotificationBell() {
                                     onClick={() => markAsRead(notification.id)}
                                 >
                                     <div className="flex items-start gap-3">
-                                        <div className={`p-2 rounded-lg ${getTypeColor(notification.type)} shrink-0 flex items-center justify-center`}>
+                                        <div className={`p-1.5 rounded-md ${getTypeColor()} shrink-0`}>
                                             {getTypeIcon(notification.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">

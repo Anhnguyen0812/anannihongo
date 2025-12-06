@@ -40,6 +40,7 @@ export default function Chatbot({ screenContext }: ChatbotProps) {
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [streamingContent, setStreamingContent] = useState('')
+    const [cooldownSeconds, setCooldownSeconds] = useState(0)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -125,14 +126,26 @@ export default function Chatbot({ screenContext }: ChatbotProps) {
                 try {
                     const errorData = await response.json()
                     if (errorData.code === 'RATE_LIMIT') {
-                        errorMsg = '⏳ Hệ thống đang quá tải. Vui lòng chờ 1 phút rồi thử lại nhé!'
+                        const retryAfter = errorData.retryAfter || 60
+                        errorMsg = `⏳ Quá nhiều tin nhắn. Chờ ${retryAfter}s...`
+                        setCooldownSeconds(retryAfter)
+                        // Start countdown
+                        const interval = setInterval(() => {
+                            setCooldownSeconds(prev => {
+                                if (prev <= 1) {
+                                    clearInterval(interval)
+                                    return 0
+                                }
+                                return prev - 1
+                            })
+                        }, 1000)
                     } else if (errorData.error) {
                         errorMsg = errorData.error
                     }
                 } catch {
                     // Ignore JSON parse error
                 }
-                
+
                 const errorMessage: Message = {
                     id: (Date.now() + 1).toString(),
                     role: 'assistant',
@@ -241,9 +254,9 @@ export default function Chatbot({ screenContext }: ChatbotProps) {
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ 
-                            opacity: 1, 
-                            y: 0, 
+                        animate={{
+                            opacity: 1,
+                            y: 0,
                             scale: 1,
                             height: isMinimized ? 'auto' : '80vh'
                         }}
@@ -300,25 +313,22 @@ export default function Chatbot({ screenContext }: ChatbotProps) {
                                             animate={{ opacity: 1, y: 0 }}
                                             className={`flex gap-2.5 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
                                         >
-                                            <div className={`shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-                                                message.role === 'user' 
-                                                    ? 'bg-zinc-100' 
+                                            <div className={`shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${message.role === 'user'
+                                                    ? 'bg-zinc-100'
                                                     : 'bg-zinc-100'
-                                            }`}>
+                                                }`}>
                                                 {message.role === 'user' ? (
                                                     <User className="h-4 w-4 text-zinc-500" />
                                                 ) : (
                                                     <Bot className="h-4 w-4 text-zinc-500" />
                                                 )}
                                             </div>
-                                            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-                                                message.role === 'user'
+                                            <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${message.role === 'user'
                                                     ? 'bg-zinc-100 text-zinc-700'
                                                     : 'bg-zinc-50 border border-zinc-100'
-                                            }`}>
-                                                <div className={`text-sm leading-relaxed ${
-                                                    message.role === 'user' ? 'text-zinc-700' : 'text-zinc-600'
                                                 }`}>
+                                                <div className={`text-sm leading-relaxed ${message.role === 'user' ? 'text-zinc-700' : 'text-zinc-600'
+                                                    }`}>
                                                     {message.role === 'assistant' ? (
                                                         <ReactMarkdown
                                                             remarkPlugins={[remarkGfm]}
@@ -456,10 +466,14 @@ export default function Chatbot({ screenContext }: ChatbotProps) {
                                         />
                                         <button
                                             onClick={sendMessage}
-                                            disabled={!input.trim() || isLoading}
-                                            className="h-[44px] w-[44px] rounded-xl bg-zinc-100 text-zinc-600 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors"
+                                            disabled={!input.trim() || isLoading || cooldownSeconds > 0}
+                                            className="h-[44px] w-[44px] rounded-xl bg-zinc-100 text-zinc-600 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors relative"
                                         >
-                                            <Send className="h-4 w-4" />
+                                            {cooldownSeconds > 0 ? (
+                                                <span className="text-xs font-bold text-orange-500">{cooldownSeconds}</span>
+                                            ) : (
+                                                <Send className="h-4 w-4" />
+                                            )}
                                         </button>
                                     </div>
                                 </div>

@@ -1,13 +1,20 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, ChevronRight, ChevronLeft, FileText, Video, Menu, X, CheckCircle2, ChevronDown, Folder, Home, BookOpen, GraduationCap, User } from 'lucide-react'
 import { completeLesson, uncompleteLesson } from '@/app/learn/actions'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { Lesson, Course, OrganizedLessons, FolderNode } from '@/types'
-import Chatbot from '@/components/Chatbot'
+import { ChatbotSkeleton } from '@/components/skeletons'
+
+// Lazy load heavy Chatbot component
+const Chatbot = dynamic(() => import('@/components/Chatbot'), {
+    loading: () => <ChatbotSkeleton />,
+    ssr: false,
+})
 
 interface LessonPlayerProps {
     currentLesson: Lesson
@@ -207,6 +214,13 @@ export default function LessonPlayer({
     const nextLesson = currentIndex < sortedFlatLessons.length - 1 ? sortedFlatLessons[currentIndex + 1] : null
     const prevLesson = currentIndex > 0 ? sortedFlatLessons[currentIndex - 1] : null
 
+    // Prefetch next lesson route for faster navigation
+    useEffect(() => {
+        if (nextLesson) {
+            router.prefetch(`/learn/${course.id}/${nextLesson.id}`)
+        }
+    }, [nextLesson, course.id, router])
+
     // Calculate progress
     const completedLessons = allLessons.filter(l => l.is_completed).length
     const totalLessons = allLessons.length
@@ -223,7 +237,7 @@ export default function LessonPlayer({
                             <img src="/logo.svg" alt="AnAn Nihongo Logo" className="h-full w-full object-contain" />
                         </div>
                     </Link>
-                    
+
                     {/* Breadcrumb */}
                     <nav className="hidden md:flex items-center gap-1 text-sm min-w-0">
                         <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
@@ -241,7 +255,7 @@ export default function LessonPlayer({
                         <ChevronRight className="h-3.5 w-3.5 text-border shrink-0" />
                         <span className="text-heading font-medium truncate max-w-[150px]">{currentLesson.title}</span>
                     </nav>
-                    
+
                     {/* Mobile: Course title */}
                     <span className="md:hidden font-medium text-sm text-heading truncate">{course?.title}</span>
                 </div>
@@ -253,7 +267,7 @@ export default function LessonPlayer({
                         <span className="text-xs font-medium text-muted-foreground">Tiến độ</span>
                     </div>
                     <div className="w-32 h-2 bg-zinc-100 rounded-full overflow-hidden">
-                        <motion.div 
+                        <motion.div
                             className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercent}%` }}
@@ -271,16 +285,16 @@ export default function LessonPlayer({
                         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                         <span className="text-xs font-semibold text-primary">{progressPercent}%</span>
                     </div>
-                    
+
                     {/* Profile Link */}
-                    <Link 
-                        href="/profile" 
+                    <Link
+                        href="/profile"
                         className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
                     >
                         <User className="h-4 w-4" />
                         <span className="hidden xl:inline">Hồ sơ</span>
                     </Link>
-                    
+
                     {/* Sidebar Toggle */}
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -444,9 +458,9 @@ export default function LessonPlayer({
                     )}
                 </AnimatePresence>
             </div>
-            
+
             {/* Chatbot with lesson context including video/file link */}
-            <Chatbot 
+            <Chatbot
                 screenContext={`Khóa: ${course?.title?.slice(0, 30)}. Bài: ${currentLesson.title?.slice(0, 50)}. Link: https://drive.google.com/file/d/${currentLesson.drive_file_id}/view`}
             />
         </div>

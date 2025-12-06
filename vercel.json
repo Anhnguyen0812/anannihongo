@@ -1,5 +1,4 @@
 {
-    "name": "anannihongo",
     "framework": "nextjs",
     "buildCommand": "next build",
     "devCommand": "next dev",

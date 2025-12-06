@@ -26,7 +26,7 @@ export async function isAdmin(): Promise<boolean> {
         .eq('id', user.id)
         .single()
 
-    return profile?.role === 'admin'
+    return (profile as any)?.role === 'admin'
 }
 
 /**
@@ -83,7 +83,7 @@ export async function getAdminStatus() {
         .single()
 
     return {
-        isAdmin: profile?.role === 'admin',
+        isAdmin: (profile as any)?.role === 'admin',
         user,
         profile
     }
