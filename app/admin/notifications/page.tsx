@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createAdminClient } from '@/utils/supabase/admin-client'
 import type { Notification, Profile } from '@/types/supabase'
-import { Plus, Trash2, X, Check, Send, Bell, Users, Globe } from 'lucide-react'
+import { Plus, Trash2, X, Send, Bell, Users, Globe, Search } from 'lucide-react'
 
 export default function AdminNotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>([])
@@ -18,6 +18,7 @@ export default function AdminNotificationsPage() {
         selected_users: [] as string[],
     })
     const [saving, setSaving] = useState(false)
+    const [userSearch, setUserSearch] = useState('')
 
     const supabase = createAdminClient()
 
@@ -44,6 +45,7 @@ export default function AdminNotificationsPage() {
             target_type: 'all',
             selected_users: [],
         })
+        setUserSearch('')
         setIsModalOpen(true)
     }
 
@@ -65,11 +67,9 @@ export default function AdminNotificationsPage() {
         setSaving(true)
 
         try {
-            // Get current user
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error('Not authenticated')
 
-            // Create notification
             const { data: notification, error: insertError } = await supabase
                 .from('notifications')
                 .insert({
@@ -84,14 +84,11 @@ export default function AdminNotificationsPage() {
 
             if (insertError) throw insertError
 
-            // Send to users based on target type
             if (formData.target_type === 'all') {
-                // Send to all users
                 const { error } = await supabase.rpc('send_notification_to_all', {
                     notification_id_param: notification.id
                 })
                 if (error) {
-                    // Fallback: insert manually for all users
                     const userIds = users.map(u => u.id)
                     await supabase.from('user_notifications').insert(
                         userIds.map(userId => ({
@@ -101,13 +98,11 @@ export default function AdminNotificationsPage() {
                     )
                 }
             } else if (formData.selected_users.length > 0) {
-                // Send to selected users
                 const { error } = await supabase.rpc('send_notification_to_users', {
                     notification_id_param: notification.id,
                     user_ids: formData.selected_users
                 })
                 if (error) {
-                    // Fallback: insert manually
                     await supabase.from('user_notifications').insert(
                         formData.selected_users.map(userId => ({
                             user_id: userId,
@@ -128,9 +123,7 @@ export default function AdminNotificationsPage() {
     }
 
     async function handleDelete(notification: Notification) {
-        if (!confirm(`Bạn có chắc muốn xóa thông báo "${notification.title}"?`)) {
-            return
-        }
+        if (!confirm(`Xóa thông báo "${notification.title}"?`)) return
 
         const { error } = await supabase
             .from('notifications')
@@ -147,9 +140,9 @@ export default function AdminNotificationsPage() {
 
     const getTypeLabel = (type: string) => {
         switch (type) {
-            case 'general': return 'Thông báo chung'
+            case 'general': return 'Chung'
             case 'course': return 'Khóa học'
-            case 'announcement': return 'Tin quan trọng'
+            case 'announcement': return 'Quan trọng'
             default: return type
         }
     }
@@ -163,72 +156,74 @@ export default function AdminNotificationsPage() {
         }
     }
 
+    const filteredUsersForSelection = users.filter(u =>
+        u.role !== 'admin' &&
+        (!userSearch ||
+            u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+            u.email?.toLowerCase().includes(userSearch.toLowerCase())
+        )
+    )
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <div className="flex items-center justify-center h-48">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
             </div>
         )
     }
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-zinc-900">Quản lý thông báo</h1>
-                    <p className="text-zinc-600 mt-1">Gửi thông báo đến người dùng</p>
+                    <h1 className="text-xl font-bold text-zinc-900">Quản lý thông báo</h1>
+                    <p className="text-sm text-zinc-600">Tổng: {notifications.length} thông báo</p>
                 </div>
                 <button
                     onClick={openModal}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors"
+                    className="flex items-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors text-sm"
                 >
-                    <Plus className="w-5 h-5" />
-                    Tạo thông báo
+                    <Plus className="w-4 h-4" />
+                    Tạo
                 </button>
             </div>
 
             {/* Notifications List */}
-            <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
                 <div className="divide-y divide-zinc-100">
                     {notifications.map((notification) => (
-                        <div key={notification.id} className="p-6 hover:bg-zinc-50">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <Bell className="w-5 h-5 text-zinc-400" />
-                                        <h3 className="font-semibold text-zinc-900">{notification.title}</h3>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(notification.type)}`}>
-                                            {getTypeLabel(notification.type)}
-                                        </span>
-                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${notification.target_type === 'all'
-                                            ? 'bg-emerald-100 text-emerald-700'
-                                            : 'bg-amber-100 text-amber-700'
-                                            }`}>
-                                            {notification.target_type === 'all' ? (
-                                                <><Globe className="w-3 h-3" /> Tất cả</>
-                                            ) : (
-                                                <><Users className="w-3 h-3" /> Chọn lọc</>
-                                            )}
-                                        </span>
-                                    </div>
-                                    <p className="text-zinc-600 ml-8">{notification.content}</p>
-                                    <p className="text-sm text-zinc-400 mt-2 ml-8">
-                                        {new Date(notification.created_at).toLocaleString('vi-VN')}
-                                    </p>
+                        <div key={notification.id} className="p-3 hover:bg-zinc-50 flex items-start gap-3">
+                            <Bell className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-medium text-sm text-zinc-900">{notification.title}</h3>
+                                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getTypeColor(notification.type)}`}>
+                                        {getTypeLabel(notification.type)}
+                                    </span>
+                                    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-medium ${notification.target_type === 'all'
+                                        ? 'bg-emerald-100 text-emerald-700'
+                                        : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                        {notification.target_type === 'all' ? <Globe className="w-2.5 h-2.5" /> : <Users className="w-2.5 h-2.5" />}
+                                        {notification.target_type === 'all' ? 'Tất cả' : 'Chọn lọc'}
+                                    </span>
                                 </div>
-                                <button
-                                    onClick={() => handleDelete(notification)}
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Xóa"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <p className="text-xs text-zinc-600 mt-0.5 line-clamp-1">{notification.content}</p>
+                                <p className="text-xs text-zinc-400 mt-1">
+                                    {new Date(notification.created_at).toLocaleString('vi-VN')}
+                                </p>
                             </div>
+                            <button
+                                onClick={() => handleDelete(notification)}
+                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
                         </div>
                     ))}
                     {notifications.length === 0 && (
-                        <div className="p-12 text-center text-zinc-500">
-                            Chưa có thông báo nào. Nhấn &quot;Tạo thông báo&quot; để bắt đầu.
+                        <div className="p-8 text-center text-zinc-500 text-sm">
+                            Chưa có thông báo nào.
                         </div>
                     )}
                 </div>
@@ -237,134 +232,121 @@ export default function AdminNotificationsPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between p-6 border-b border-zinc-200">
-                            <h2 className="text-xl font-bold text-zinc-900">Tạo thông báo mới</h2>
-                            <button
-                                onClick={closeModal}
-                                className="p-2 hover:bg-zinc-100 rounded-lg transition-colors"
-                            >
-                                <X className="w-5 h-5" />
+                    <div className="bg-white rounded-xl max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-4 border-b border-zinc-200">
+                            <h2 className="text-base font-bold text-zinc-900">Tạo thông báo</h2>
+                            <button onClick={closeModal} className="p-1.5 hover:bg-zinc-100 rounded-lg">
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-4 space-y-3">
                             <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                    Tiêu đề *
-                                </label>
+                                <label className="block text-xs font-medium text-zinc-700 mb-1">Tiêu đề *</label>
                                 <input
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="Nhập tiêu đề thông báo"
+                                    className="w-full px-3 py-1.5 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Tiêu đề thông báo"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                    Nội dung *
-                                </label>
+                                <label className="block text-xs font-medium text-zinc-700 mb-1">Nội dung *</label>
                                 <textarea
                                     value={formData.content}
                                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                                    rows={4}
-                                    placeholder="Nhập nội dung thông báo"
+                                    className="w-full px-3 py-1.5 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                    rows={2}
+                                    placeholder="Nội dung thông báo"
                                     required
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                        Loại thông báo
-                                    </label>
+                                    <label className="block text-xs font-medium text-zinc-700 mb-1">Loại</label>
                                     <select
                                         value={formData.type}
                                         onChange={(e) => setFormData({ ...formData, type: e.target.value as typeof formData.type })}
-                                        className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-1.5 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                                     >
-                                        <option value="general">Thông báo chung</option>
+                                        <option value="general">Chung</option>
                                         <option value="course">Khóa học</option>
-                                        <option value="announcement">Tin quan trọng</option>
+                                        <option value="announcement">Quan trọng</option>
                                     </select>
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                        Gửi đến
-                                    </label>
+                                    <label className="block text-xs font-medium text-zinc-700 mb-1">Gửi đến</label>
                                     <select
                                         value={formData.target_type}
                                         onChange={(e) => setFormData({ ...formData, target_type: e.target.value as typeof formData.target_type })}
-                                        className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-1.5 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                                     >
-                                        <option value="all">Tất cả người dùng</option>
+                                        <option value="all">Tất cả</option>
                                         <option value="selected">Chọn người dùng</option>
                                     </select>
                                 </div>
                             </div>
 
-                            {/* User Selection */}
                             {formData.target_type === 'selected' && (
                                 <div>
-                                    <label className="block text-sm font-medium text-zinc-700 mb-2">
-                                        Chọn người dùng ({formData.selected_users.length} đã chọn)
+                                    <label className="block text-xs font-medium text-zinc-700 mb-1">
+                                        Chọn người dùng ({formData.selected_users.length})
                                     </label>
-                                    <div className="max-h-48 overflow-y-auto border border-zinc-200 rounded-xl p-2 space-y-1">
-                                        {users.filter(u => u.role !== 'admin').map((user) => (
+                                    <div className="relative mb-2">
+                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                                        <input
+                                            type="text"
+                                            value={userSearch}
+                                            onChange={(e) => setUserSearch(e.target.value)}
+                                            placeholder="Tìm người dùng..."
+                                            className="w-full pl-8 pr-3 py-1.5 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+                                    <div className="max-h-32 overflow-y-auto border border-zinc-200 rounded-lg">
+                                        {filteredUsersForSelection.map((user) => (
                                             <label
                                                 key={user.id}
-                                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${formData.selected_users.includes(user.id)
-                                                    ? 'bg-indigo-50'
-                                                    : 'hover:bg-zinc-50'
-                                                    }`}
+                                                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer text-sm ${formData.selected_users.includes(user.id) ? 'bg-indigo-50' : 'hover:bg-zinc-50'}`}
                                             >
                                                 <input
                                                     type="checkbox"
                                                     checked={formData.selected_users.includes(user.id)}
                                                     onChange={() => toggleUserSelection(user.id)}
-                                                    className="w-4 h-4 text-indigo-600 border-zinc-300 rounded focus:ring-indigo-500"
+                                                    className="w-3.5 h-3.5 text-indigo-600 border-zinc-300 rounded"
                                                 />
-                                                <div>
-                                                    <div className="font-medium text-zinc-900">
-                                                        {user.full_name || 'Chưa đặt tên'}
-                                                    </div>
-                                                    <div className="text-sm text-zinc-500">{user.email}</div>
-                                                </div>
+                                                <span className="truncate">{user.full_name || user.email}</span>
                                             </label>
                                         ))}
-                                        {users.filter(u => u.role !== 'admin').length === 0 && (
-                                            <p className="text-center text-zinc-500 py-4">
-                                                Không có người dùng nào
-                                            </p>
+                                        {filteredUsersForSelection.length === 0 && (
+                                            <p className="text-center text-zinc-500 py-3 text-xs">Không tìm thấy</p>
                                         )}
                                     </div>
                                 </div>
                             )}
 
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200">
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-4 py-2 text-zinc-600 hover:bg-zinc-100 rounded-xl transition-colors"
+                                    className="px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100 rounded-lg"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving || (formData.target_type === 'selected' && formData.selected_users.length === 0)}
-                                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                                    className="flex items-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm"
                                 >
                                     {saving ? (
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                     ) : (
                                         <Send className="w-4 h-4" />
                                     )}
-                                    Gửi thông báo
+                                    Gửi
                                 </button>
                             </div>
                         </form>

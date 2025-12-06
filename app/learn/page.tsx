@@ -22,10 +22,22 @@ export default async function LearnDashboard() {
         .single()
 
     // Get courses
-    const { data: courses } = await supabase
+    const { data: coursesData } = await supabase
         .from('courses')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
+
+    // Sắp xếp theo thứ tự N5 -> N4 -> N3 -> N2 -> N1
+    const courses = (coursesData || []).sort((a: any, b: any) => {
+        const getLevel = (title: string) => {
+            const match = title.match(/N(\d)/i)
+            if (match) {
+                return parseInt(match[1])
+            }
+            return 0
+        }
+        return getLevel(b.title) - getLevel(a.title)
+    })
 
     // Get user progress count
     const { count: completedCount } = await supabase

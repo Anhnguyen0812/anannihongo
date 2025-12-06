@@ -2,8 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import { createAdminClient } from '@/utils/supabase/admin-client'
-import type { Course } from '@/types/supabase'
-import { Plus, Pencil, Trash2, X, Check, Eye, EyeOff } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, BookOpen } from 'lucide-react'
+
+interface Course {
+    id: number
+    title: string
+    description: string | null
+    thumbnail_url: string | null
+    created_at: string
+}
 
 export default function AdminCoursesPage() {
     const [courses, setCourses] = useState<Course[]>([])
@@ -14,9 +21,6 @@ export default function AdminCoursesPage() {
         title: '',
         description: '',
         thumbnail_url: '',
-        slug: '',
-        price: 0,
-        is_published: false,
     })
     const [saving, setSaving] = useState(false)
 
@@ -24,15 +28,33 @@ export default function AdminCoursesPage() {
 
     useEffect(() => {
         fetchCourses()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     async function fetchCourses() {
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('courses')
             .select('*')
-            .order('created_at', { ascending: false })
+            .order('id', { ascending: true })
 
-        setCourses(data || [])
+        if (error) {
+            console.error('Error fetching courses:', error)
+        }
+        
+        // Sắp xếp theo thứ tự N5 -> N4 -> N3 -> N2 -> N1
+        const sortedData = (data || []).sort((a, b) => {
+            const getLevel = (title: string) => {
+                const match = title.match(/N(\d)/i)
+                if (match) {
+                    // N5 = 5, N4 = 4, ... để N5 lên đầu (sắp xếp giảm dần)
+                    return parseInt(match[1])
+                }
+                return 0 // Các khóa học không có N level sẽ ở cuối
+            }
+            return getLevel(b.title) - getLevel(a.title)
+        })
+        
+        setCourses(sortedData)
         setLoading(false)
     }
 
@@ -43,9 +65,6 @@ export default function AdminCoursesPage() {
                 title: course.title,
                 description: course.description || '',
                 thumbnail_url: course.thumbnail_url || '',
-                slug: course.slug || '',
-                price: course.price,
-                is_published: course.is_published,
             })
         } else {
             setEditingCourse(null)
@@ -53,9 +72,6 @@ export default function AdminCoursesPage() {
                 title: '',
                 description: '',
                 thumbnail_url: '',
-                slug: '',
-                price: 0,
-                is_published: false,
             })
         }
         setIsModalOpen(true)
@@ -71,19 +87,23 @@ export default function AdminCoursesPage() {
         setSaving(true)
 
         try {
+            const dataToSave = {
+                title: formData.title,
+                description: formData.description || null,
+                thumbnail_url: formData.thumbnail_url || null,
+            }
+
             if (editingCourse) {
-                // Update existing course
                 const { error } = await supabase
                     .from('courses')
-                    .update(formData as any)
+                    .update(dataToSave as never)
                     .eq('id', editingCourse.id)
 
                 if (error) throw error
             } else {
-                // Create new course
                 const { error } = await supabase
                     .from('courses')
-                    .insert(formData as any)
+                    .insert(dataToSave as never)
 
                 if (error) throw error
             }
@@ -116,103 +136,89 @@ export default function AdminCoursesPage() {
         }
     }
 
-    async function togglePublished(course: Course) {
-        const { error } = await supabase
-            .from('courses')
-            .update({ is_published: !course.is_published } as any)
-            .eq('id', course.id)
-
-        if (!error) {
-            fetchCourses()
-        }
-    }
-
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <div className="flex items-center justify-center h-48">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
             </div>
         )
     }
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-zinc-900">Quản lý khóa học</h1>
-                    <p className="text-zinc-600 mt-1">Thêm, sửa, xóa các khóa học</p>
+                    <h1 className="text-xl font-bold text-zinc-900">Quản lý khóa học</h1>
+                    <p className="text-sm text-zinc-600">Tổng: {courses.length} khóa học</p>
                 </div>
                 <button
                     onClick={() => openModal()}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors"
+                    className="flex items-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors text-sm"
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                     Thêm khóa học
                 </button>
             </div>
 
             {/* Courses Table */}
-            <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-                <table className="w-full">
+            <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+                <table className="w-full text-sm">
                     <thead className="bg-zinc-50 border-b border-zinc-200">
                         <tr>
-                            <th className="text-left px-6 py-4 text-sm font-medium text-zinc-600">Tiêu đề</th>
-                            <th className="text-left px-6 py-4 text-sm font-medium text-zinc-600">Slug</th>
-                            <th className="text-left px-6 py-4 text-sm font-medium text-zinc-600">Giá</th>
-                            <th className="text-left px-6 py-4 text-sm font-medium text-zinc-600">Trạng thái</th>
-                            <th className="text-right px-6 py-4 text-sm font-medium text-zinc-600">Thao tác</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-zinc-600">ID</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-zinc-600">Khóa học</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-zinc-600">Mô tả</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-zinc-600">Ngày tạo</th>
+                            <th className="text-right px-4 py-2.5 font-medium text-zinc-600">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-100">
                         {courses.map((course) => (
                             <tr key={course.id} className="hover:bg-zinc-50">
-                                <td className="px-6 py-4">
-                                    <div className="font-medium text-zinc-900">{course.title}</div>
-                                    <div className="text-sm text-zinc-500 truncate max-w-xs">
-                                        {course.description}
+                                <td className="px-4 py-2.5 text-zinc-500 text-xs font-mono">
+                                    {course.id}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                    <div className="flex items-center gap-3">
+                                        {course.thumbnail_url ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={course.thumbnail_url}
+                                                alt={course.title}
+                                                className="w-10 h-10 rounded-lg object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                                                <BookOpen className="w-5 h-5 text-indigo-600" />
+                                            </div>
+                                        )}
+                                        <span className="font-medium text-zinc-900">{course.title}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-zinc-600">{course.slug || '-'}</td>
-                                <td className="px-6 py-4 text-zinc-600">
-                                    {course.price === 0 ? (
-                                        <span className="text-emerald-600 font-medium">Miễn phí</span>
-                                    ) : (
-                                        `${course.price.toLocaleString()}đ`
-                                    )}
+                                <td className="px-4 py-2.5">
+                                    <span className="text-zinc-600 truncate block max-w-[250px]">
+                                        {course.description || '-'}
+                                    </span>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <button
-                                        onClick={() => togglePublished(course)}
-                                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${course.is_published
-                                            ? 'bg-emerald-100 text-emerald-700'
-                                            : 'bg-zinc-100 text-zinc-600'
-                                            }`}
-                                    >
-                                        {course.is_published ? (
-                                            <>
-                                                <Eye className="w-4 h-4" />
-                                                Đã xuất bản
-                                            </>
-                                        ) : (
-                                            <>
-                                                <EyeOff className="w-4 h-4" />
-                                                Bản nháp
-                                            </>
-                                        )}
-                                    </button>
+                                <td className="px-4 py-2.5 text-zinc-500 text-xs">
+                                    {new Date(course.created_at).toLocaleDateString('vi-VN', {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                    })}
                                 </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center justify-end gap-2">
+                                <td className="px-4 py-2.5">
+                                    <div className="flex items-center justify-end gap-1">
                                         <button
                                             onClick={() => openModal(course)}
-                                            className="p-2 text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors"
-                                            title="Chỉnh sửa"
+                                            className="p-1.5 text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors"
+                                            title="Sửa"
                                         >
                                             <Pencil className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(course)}
-                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Xóa"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -223,8 +229,8 @@ export default function AdminCoursesPage() {
                         ))}
                         {courses.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
-                                    Chưa có khóa học nào. Nhấn &quot;Thêm khóa học&quot; để bắt đầu.
+                                <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                                    Chưa có khóa học nào. Nhấn &quot;Thêm khóa học&quot; để tạo mới.
                                 </td>
                             </tr>
                         )}
@@ -235,29 +241,30 @@ export default function AdminCoursesPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between p-6 border-b border-zinc-200">
-                            <h2 className="text-xl font-bold text-zinc-900">
-                                {editingCourse ? 'Chỉnh sửa khóa học' : 'Thêm khóa học mới'}
+                    <div className="bg-white rounded-xl max-w-md w-full mx-4 max-h-[85vh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-4 border-b border-zinc-200">
+                            <h2 className="text-base font-bold text-zinc-900">
+                                {editingCourse ? 'Sửa khóa học' : 'Thêm khóa học mới'}
                             </h2>
                             <button
                                 onClick={closeModal}
-                                className="p-2 hover:bg-zinc-100 rounded-lg transition-colors"
+                                className="p-1.5 hover:bg-zinc-100 rounded-lg transition-colors"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-4 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                    Tiêu đề *
+                                    Tên khóa học <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                                    placeholder="VD: N5 Cơ bản"
                                     required
                                 />
                             </div>
@@ -269,21 +276,9 @@ export default function AdminCoursesPage() {
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                                     rows={3}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                    Slug (URL)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.slug}
-                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="vd: n5-beginner"
+                                    placeholder="Mô tả ngắn về khóa học..."
                                 />
                             </div>
 
@@ -295,50 +290,36 @@ export default function AdminCoursesPage() {
                                     type="url"
                                     value={formData.thumbnail_url}
                                     onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="https://..."
+                                    className="w-full px-3 py-2 text-sm border border-zinc-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono text-xs"
+                                    placeholder="https://example.com/image.jpg"
                                 />
+                                {formData.thumbnail_url && (
+                                    <div className="mt-2">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={formData.thumbnail_url}
+                                            alt="Preview"
+                                            className="w-20 h-20 rounded-lg object-cover border border-zinc-200"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none'
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-1">
-                                    Giá (VNĐ)
-                                </label>
-                                <input
-                                    type="number"
-                                    value={formData.price}
-                                    onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border border-zinc-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                    min={0}
-                                />
-                                <p className="text-sm text-zinc-500 mt-1">Để 0 nếu miễn phí</p>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="is_published"
-                                    checked={formData.is_published}
-                                    onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
-                                    className="w-4 h-4 text-indigo-600 border-zinc-300 rounded focus:ring-indigo-500"
-                                />
-                                <label htmlFor="is_published" className="text-sm font-medium text-zinc-700">
-                                    Xuất bản ngay
-                                </label>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-200">
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-200">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-4 py-2 text-zinc-600 hover:bg-zinc-100 rounded-xl transition-colors"
+                                    className="px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={saving}
-                                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                                    disabled={saving || !formData.title.trim()}
+                                    className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 text-sm"
                                 >
                                     {saving ? (
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

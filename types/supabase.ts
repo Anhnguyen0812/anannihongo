@@ -30,24 +30,24 @@ export interface Database {
                     email: string | null
                     full_name: string | null
                     avatar_url: string | null
-                    role: 'admin' | 'student'
-                    created_at: string // timestamp
+                    role: 'admin' | 'user'
+                    updated_at: string // timestamp
                 }
                 Insert: {
                     id: string
                     email?: string | null
                     full_name?: string | null
                     avatar_url?: string | null
-                    role?: 'admin' | 'student'
-                    created_at?: string
+                    role?: 'admin' | 'user'
+                    updated_at?: string
                 }
                 Update: {
                     id?: string
                     email?: string | null
                     full_name?: string | null
                     avatar_url?: string | null
-                    role?: 'admin' | 'student'
-                    created_at?: string
+                    role?: 'admin' | 'user'
+                    updated_at?: string
                 }
             }
             courses: {

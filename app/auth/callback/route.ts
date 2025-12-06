@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
                         email: data.user.email,
                         full_name: data.user.user_metadata.full_name || data.user.user_metadata.name,
                         avatar_url: data.user.user_metadata.avatar_url || data.user.user_metadata.picture,
-                        role: 'student',
+                        role: 'user',
                     })
 
                 if (profileError) {

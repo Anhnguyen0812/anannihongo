@@ -1,8 +1,8 @@
 'use server'
-'use server'
 
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
 /**
@@ -136,10 +136,17 @@ export async function loginWithGoogle() {
 /**
  * Server Action: Sign Out
  * 
- * Logs out the current user and redirects to home page
+ * Logs out the current user, clears server cache, and redirects to home page
  */
 export async function signOut() {
     const supabase = await createClient()
     await supabase.auth.signOut()
+    
+    // Xóa server-side cache cho tất cả các routes
+    revalidatePath('/', 'layout')
+    revalidatePath('/learn', 'layout')
+    revalidatePath('/admin', 'layout')
+    revalidatePath('/profile', 'layout')
+    
     redirect('/')
 }

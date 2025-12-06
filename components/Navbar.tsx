@@ -23,6 +23,22 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
     const handleLogout = () => {
         setIsLoggingOut(true)
+        
+        // Xóa tất cả cache trong localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.clear()
+            sessionStorage.clear()
+            
+            // Xóa cache của React Query nếu có
+            try {
+                const queryClient = (window as any).__REACT_QUERY_CLIENT__
+                if (queryClient) {
+                    queryClient.clear()
+                }
+            } catch (e) {
+                // Ignore errors
+            }
+        }
     }
 
     return (
