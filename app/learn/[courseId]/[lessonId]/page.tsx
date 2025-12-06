@@ -50,34 +50,49 @@ async function getLessonData(courseId: string, lessonId: string) {
         redirect(`/login?redirectTo=/learn/${courseId}/${lessonId}`)
     }
 
-    // Get current lesson
-    const { data: currentLesson, error: lessonError } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('id', lessonId)
-        .eq('course_id', courseId)
-        .single()
+    // Parallel fetch for speed
+    const [lessonResult, allLessonsResult, progressResult, courseResult] = await Promise.all([
+        // Get current lesson
+        supabase
+            .from('lessons')
+            .select('*')
+            .eq('id', lessonId)
+            .eq('course_id', courseId)
+            .single(),
+
+        // Get all lessons in this course
+        supabase
+            .from('lessons')
+            .select('*')
+            .eq('course_id', courseId)
+            .order('lesson_order', { ascending: true }),
+
+        // Get user's progress
+        supabase
+            .from('progress')
+            .select('lesson_id, is_completed')
+            .eq('user_id', user.id),
+
+        // Get course info
+        supabase
+            .from('courses')
+            .select('*')
+            .eq('id', courseId)
+            .single(),
+    ])
+
+    const { data: currentLesson, error: lessonError } = lessonResult
+    const { data: allLessons } = allLessonsResult
+    const { data: progressData } = progressResult
+    const { data: course } = courseResult
 
     if (lessonError || !currentLesson) {
         notFound()
     }
 
-    // Get all lessons in this course
-    const { data: allLessons, error: lessonsError } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('course_id', courseId)
-        .order('lesson_order', { ascending: true })
-
-    if (lessonsError) {
-        console.error('Error fetching lessons:', lessonsError)
+    if (!course) {
+        notFound()
     }
-
-    // Get user's progress for all lessons
-    const { data: progressData } = await supabase
-        .from('progress')
-        .select('lesson_id, is_completed, last_watched_at')
-        .eq('user_id', user.id)
 
     // Create map of progress
     const progressMap = new Map<number, Partial<Progress>>(
@@ -86,26 +101,10 @@ async function getLessonData(courseId: string, lessonId: string) {
 
     // Merge progress into lessons
     const lessonsWithProgress: Lesson[] =
-        (allLessons as any)?.map((lesson: any) => {
-            const progress = progressMap.get(lesson.id)
-
-            return {
-                ...lesson,
-                is_completed: progress?.is_completed ?? false,
-                last_watched_at: progress?.last_watched_at ?? null,
-            }
-        }) || []
-
-    // Get course info
-    const { data: course } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', courseId)
-        .single()
-
-    if (!course) {
-        notFound()
-    }
+        (allLessons as any)?.map((lesson: any) => ({
+            ...lesson,
+            is_completed: progressMap.get(lesson.id)?.is_completed ?? false,
+        })) || []
 
     return {
         currentLesson: currentLesson as Lesson,
