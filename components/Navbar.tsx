@@ -271,6 +271,26 @@ export default function Navbar({ user, profile }: NavbarProps) {
                                     <BookOpen className="h-5 w-5 text-indigo-500" />
                                     <span>Khóa học</span>
                                 </Link>
+
+                                {/* Mobile Practice Links */}
+                                <div className="space-y-1">
+                                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Luyện tập</div>
+                                    <Link
+                                        href="/practice/kana"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all ml-2"
+                                    >
+                                        <span>✍️ Bảng chữ cái</span>
+                                    </Link>
+                                    <Link
+                                        href="/practice/vocabulary"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all ml-2"
+                                    >
+                                        <span>📚 Từ vựng</span>
+                                    </Link>
+                                </div>
+
                                 <Link
                                     href="/about"
                                     onClick={() => setIsMenuOpen(false)}

@@ -310,7 +310,7 @@ const VocabularyPracticePage = () => {
     return (
         <div className="container mx-auto p-4 max-w-4xl min-h-screen flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
                     {viewMode !== 'list' && (
                         <button onClick={backToList} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -323,7 +323,7 @@ const VocabularyPracticePage = () => {
                         {viewMode === 'review' && '🔄 Ôn tập'}
                     </h1>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
                     {viewMode === 'list' && (
                         <button
                             onClick={() => setShowSettings(true)}
@@ -350,7 +350,7 @@ const VocabularyPracticePage = () => {
                 <>
                     {/* Stats & Actions */}
                     <div className="flex flex-wrap gap-3 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
                             <span>📊 {words.length} từ</span>
                             <span>•</span>
                             <span>⏰ {dueCount} cần ôn</span>
@@ -390,7 +390,7 @@ const VocabularyPracticePage = () => {
                         </div>
                     ) : (
                         <>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 border-b border-gray-100">
                                         <tr>
