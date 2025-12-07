@@ -95,7 +95,7 @@ const VocabularyPracticePage = () => {
                 return;
             }
 
-            let wordsWithProgress: VocabularyWithProgress[] = (vocabData || []).map(w => ({
+            let wordsWithProgress: VocabularyWithProgress[] = ((vocabData as any) || []).map((w: any) => ({
                 ...w,
                 selected: false,
             }));
@@ -110,7 +110,7 @@ const VocabularyPracticePage = () => {
                     .in('vocabulary_id', vocabIds);
 
                 if (progressData) {
-                    const progressMap = new Map(progressData.map(p => [p.vocabulary_id, p]));
+                    const progressMap = new Map((progressData as any[]).map(p => [p.vocabulary_id, p]));
                     wordsWithProgress = wordsWithProgress.map(w => ({
                         ...w,
                         progress: progressMap.get(w.id),
@@ -208,13 +208,13 @@ const VocabularyPracticePage = () => {
         };
 
         if (existingProgress?.id) {
-            await supabase
-                .from('user_vocabulary_progress')
+            await (supabase
+                .from('user_vocabulary_progress') as any)
                 .update(progressData)
                 .eq('id', existingProgress.id);
         } else {
-            await supabase
-                .from('user_vocabulary_progress')
+            await (supabase
+                .from('user_vocabulary_progress') as any)
                 .insert(progressData);
         }
 
