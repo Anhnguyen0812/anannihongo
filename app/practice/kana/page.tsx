@@ -8,7 +8,8 @@ import {
 } from '@/lib/constants';
 import WritingWidget from '@/components/WritingWidget';
 import { speakJapanese } from '@/lib/ttsUtils';
-import { X, Volume2 } from 'lucide-react';
+import { X, Volume2, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 type ScriptType = 'hiragana' | 'katakana';
 type CategoryType = 'basic' | 'dakuon' | 'handakuon' | 'yoon';
@@ -55,8 +56,11 @@ const KanaPracticePage = () => {
     return (
         <div className="container mx-auto p-4 max-w-4xl min-h-screen">
             {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-                <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 relative">
+                <Link href="/" className="absolute left-4 top-4 p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
+                    <ArrowLeft size={24} />
+                </Link>
+                <h1 className="text-2xl font-bold text-center mb-4 text-gray-800 pt-2">
                     Luyện viết bảng chữ cái
                 </h1>
 

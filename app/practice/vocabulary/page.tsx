@@ -16,6 +16,7 @@ import {
     Loader2, CheckCircle2, ChevronRight, RefreshCcw, Volume2,
     ArrowRight, ArrowLeft, BookOpen, PenTool, Settings, X, Check
 } from 'lucide-react';
+import Link from 'next/link';
 
 interface VocabularyItem {
     id: number;
@@ -312,10 +313,14 @@ const VocabularyPracticePage = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex items-center gap-4">
-                    {viewMode !== 'list' && (
+                    {viewMode !== 'list' ? (
                         <button onClick={backToList} className="p-2 hover:bg-gray-100 rounded-lg">
                             <ArrowLeft size={20} />
                         </button>
+                    ) : (
+                        <Link href="/" className="p-2 hover:bg-gray-100 rounded-lg text-gray-600">
+                            <ArrowLeft size={20} />
+                        </Link>
                     )}
                     <h1 className="text-xl font-bold text-gray-800">
                         {viewMode === 'list' && 'Từ vựng'}
