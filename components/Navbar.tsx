@@ -23,12 +23,12 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
     const handleLogout = () => {
         setIsLoggingOut(true)
-        
+
         // Xóa tất cả cache trong localStorage
         if (typeof window !== 'undefined') {
             localStorage.clear()
             sessionStorage.clear()
-            
+
             // Xóa cache của React Query nếu có
             try {
                 const queryClient = (window as any).__REACT_QUERY_CLIENT__
@@ -68,11 +68,28 @@ export default function Navbar({ user, profile }: NavbarProps) {
                             <BookOpen className="h-4 w-4 group-hover:scale-110 transition-transform" />
                             <span>Khóa học</span>
                         </Link>
+
+                        {/* Dropdown Luyện tập */}
+                        <div className="relative group">
+                            <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all duration-200">
+                                <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                                <span>Luyện tập</span>
+                            </button>
+                            <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
+                                <Link href="/practice/kana" className="block px-4 py-3 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                    ✍️ Bảng chữ cái
+                                </Link>
+                                <Link href="/practice/vocabulary" className="block px-4 py-3 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                                    📚 Từ vựng
+                                </Link>
+                            </div>
+                        </div>
+
                         <Link
                             href="/about"
                             className="group flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200"
                         >
-                            <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                            <Rocket className="h-4 w-4 group-hover:scale-110 transition-transform" />
                             <span>Giới thiệu</span>
                         </Link>
                     </div>

@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
                     })
                     cookiesToSet.forEach(({ name, value, options }) => {
                         // If session-only mode, remove maxAge to make cookies expire on browser close
-                        const cookieOptions = isSessionOnly 
+                        const cookieOptions = isSessionOnly
                             ? { ...options, maxAge: undefined, expires: undefined }
                             : options
                         supabaseResponse.cookies.set(name, value, cookieOptions)
@@ -81,7 +81,7 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Protected routes that require authentication
-    const protectedPaths = ['/learn', '/profile', '/dashboard']
+    const protectedPaths = ['/learn', '/profile', '/dashboard', '/practice']
     const isProtectedPath = protectedPaths.some(path =>
         request.nextUrl.pathname.startsWith(path)
     )
