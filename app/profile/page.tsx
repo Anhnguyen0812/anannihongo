@@ -4,6 +4,7 @@ import { User, Mail, Calendar, Trophy, Clock, BookOpen, Target } from 'lucide-re
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import ChatbotWrapper from '@/components/ChatbotWrapper'
+import NotificationSettings from '@/components/NotificationSettings'
 
 export default async function ProfilePage() {
     const supabase = await createClient()
@@ -197,6 +198,9 @@ export default async function ProfilePage() {
                         </div>
                     )}
                 </div>
+
+                {/* Notification Settings */}
+                <NotificationSettings />
             </div>
             <ChatbotWrapper screenContext="Trang hồ sơ cá nhân - Người dùng đang xem thông tin và tiến độ học tập" />
         </div>

@@ -5,6 +5,42 @@ import { createAdminClient } from '@/utils/supabase/admin-client'
 import type { NotificationWithStatus } from '@/types/supabase'
 import { Bell, X, Info, BookOpen, Megaphone } from 'lucide-react'
 import { useToast, ToastType } from './ToastNotification'
+import { getNotificationSoundEnabled, setNotificationVolume, setNotificationSoundEnabled } from '@/hooks/useRealtimeNotifications'
+
+// Đường dẫn file âm thanh thông báo
+const NOTIFICATION_SOUND_URL = '/audio/noti.mp3'
+
+// Audio element được preload
+let notificationAudio: HTMLAudioElement | null = null
+let audioUnlocked = false
+
+if (typeof window !== 'undefined') {
+    notificationAudio = new Audio(NOTIFICATION_SOUND_URL)
+    notificationAudio.volume = 0.5
+    notificationAudio.preload = 'auto'
+    
+    // Unlock audio khi user có bất kỳ interaction nào
+    const unlockAudio = () => {
+        if (audioUnlocked) return
+        if (notificationAudio) {
+            const originalVolume = notificationAudio.volume
+            notificationAudio.volume = 0
+            notificationAudio.play().then(() => {
+                notificationAudio!.pause()
+                notificationAudio!.currentTime = 0
+                notificationAudio!.volume = originalVolume
+                audioUnlocked = true
+            }).catch(() => {})
+        }
+        document.removeEventListener('click', unlockAudio)
+        document.removeEventListener('touchstart', unlockAudio)
+        document.removeEventListener('keydown', unlockAudio)
+    }
+    
+    document.addEventListener('click', unlockAudio)
+    document.addEventListener('touchstart', unlockAudio)
+    document.addEventListener('keydown', unlockAudio)
+}
 
 export default function NotificationBell() {
     const [notifications, setNotifications] = useState<NotificationWithStatus[]>([])
@@ -39,14 +75,33 @@ export default function NotificationBell() {
         return false
     }, [])
 
+    // Phát âm thanh thông báo tùy chỉnh
+    const playNotificationSound = useCallback(() => {
+        try {
+            if (!getNotificationSoundEnabled()) return // Không phát nếu đã tắt
+            
+            if (notificationAudio) {
+                notificationAudio.currentTime = 0
+                notificationAudio.play().catch(() => {})
+            }
+        } catch (error) {
+            // Silent fail
+        }
+    }, [])
+
     // Show browser notification popup
     const showBrowserNotification = useCallback((title: string, body: string, id: number) => {
         if (permissionRef.current !== 'granted') return
+        
+        // Phát âm thanh tùy chỉnh
+        playNotificationSound()
+        
         const notification = new Notification(title, {
             body: body,
             icon: '/logo.svg',
             badge: '/logo.svg',
             tag: `notification-${id}`,
+            silent: true, // Tắt âm thanh mặc định của Windows
         })
         notification.onclick = () => {
             window.focus()
@@ -54,7 +109,7 @@ export default function NotificationBell() {
             notification.close()
         }
         setTimeout(() => notification.close(), 5000)
-    }, [])
+    }, [playNotificationSound])
 
     // Show in-app toast notification
     const showToastNotification = useCallback((title: string, content: string, type: string) => {
@@ -166,11 +221,18 @@ export default function NotificationBell() {
                         const canShowNotif = permissionRef.current === 'granted' || Notification.permission === 'granted'
 
                         if (canShowNotif) {
+                            // Phát âm thanh tùy chỉnh
+                            if (notificationAudio) {
+                                notificationAudio.currentTime = 0
+                                notificationAudio.play().catch(() => {})
+                            }
+                            
                             const browserNotif = new Notification(newNotif.title, {
                                 body: newNotif.content,
                                 icon: '/logo.svg',
                                 badge: '/logo.svg',
                                 tag: `notification-${newNotif.id}`,
+                                silent: true, // Tắt âm thanh mặc định của Windows
                             })
                             browserNotif.onclick = () => {
                                 window.focus()
