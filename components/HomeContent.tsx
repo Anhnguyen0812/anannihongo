@@ -4,11 +4,15 @@ import { motion } from "framer-motion"
 import { BookOpen, ArrowRight, Users, Star, Target, Zap, Award } from "lucide-react"
 import Link from "next/link"
 
+import { useAuth } from "@/hooks/useAuth"
+
 interface HomeContentProps {
     user?: any
 }
 
-export default function HomeContent({ user }: HomeContentProps) {
+export default function HomeContent({ user: propUser }: HomeContentProps) {
+    const { data: authData } = useAuth()
+    const user = propUser !== undefined ? propUser : authData?.user
     const courses = [
         { id: 6, title: "N5 - Nhập môn", subtitle: "Beginner", lessons: 48, duration: "3 tháng", students: 2340 },
         { id: 7, title: "N4 - Sơ cấp", subtitle: "Elementary", lessons: 56, duration: "4 tháng", students: 1890 },

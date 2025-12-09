@@ -207,7 +207,13 @@ export default function NotificationBell() {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const newNotif = notification as any
 
-                        // Show in-app toast notification
+                        // Phát âm thanh tùy chỉnh (hoạt động cả khi browser notification bị chặn)
+                        if (notificationAudio && getNotificationSoundEnabled()) {
+                            notificationAudio.currentTime = 0
+                            notificationAudio.play().catch(() => {})
+                        }
+
+                        // Show in-app toast notification (luôn hoạt động)
                         const toastType: ToastType = newNotif.type === 'course' ? 'course'
                             : newNotif.type === 'announcement' ? 'announcement' : 'general'
                         addToast({
@@ -217,29 +223,30 @@ export default function NotificationBell() {
                             duration: 6000,
                         })
 
-                        // Show browser notification popup
-                        const canShowNotif = permissionRef.current === 'granted' || Notification.permission === 'granted'
+                        // Show browser notification popup (có thể bị chặn trên mobile)
+                        try {
+                            const canShowNotif = 'Notification' in window && 
+                                (permissionRef.current === 'granted' || Notification.permission === 'granted')
 
-                        if (canShowNotif) {
-                            // Phát âm thanh tùy chỉnh
-                            if (notificationAudio) {
-                                notificationAudio.currentTime = 0
-                                notificationAudio.play().catch(() => {})
+                            if (canShowNotif) {
+                                const browserNotif = new Notification(newNotif.title, {
+                                    body: newNotif.content,
+                                    icon: '/logo.svg',
+                                    badge: '/logo.svg',
+                                    tag: `notification-${newNotif.id}`,
+                                    silent: true,
+                                    // Thêm vibrate cho mobile
+                                    vibrate: [200, 100, 200],
+                                } as NotificationOptions)
+                                browserNotif.onclick = () => {
+                                    window.focus()
+                                    setIsOpen(true)
+                                    browserNotif.close()
+                                }
+                                setTimeout(() => browserNotif.close(), 5000)
                             }
-                            
-                            const browserNotif = new Notification(newNotif.title, {
-                                body: newNotif.content,
-                                icon: '/logo.svg',
-                                badge: '/logo.svg',
-                                tag: `notification-${newNotif.id}`,
-                                silent: true, // Tắt âm thanh mặc định của Windows
-                            })
-                            browserNotif.onclick = () => {
-                                window.focus()
-                                setIsOpen(true)
-                                browserNotif.close()
-                            }
-                            setTimeout(() => browserNotif.close(), 5000)
+                        } catch (e) {
+                            // Browser notification không khả dụng, nhưng toast vẫn hiển thị
                         }
 
                         const newNotification: NotificationWithStatus = {

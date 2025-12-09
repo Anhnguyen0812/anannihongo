@@ -8,15 +8,24 @@ import { signOut } from "@/app/login/actions"
 import type { Profile } from "@/types/supabase"
 import NotificationBell from "./NotificationBell"
 
+import { useAuth } from "@/hooks/useAuth"
+
 interface NavbarProps {
-    user: {
+    user?: {
         id: string
         email?: string
     } | null
-    profile: Profile | null
+    profile?: Profile | null
 }
 
-export default function Navbar({ user, profile }: NavbarProps) {
+export default function Navbar({ user: propUser, profile: propProfile }: NavbarProps) {
+    const { data: authData, isLoading } = useAuth()
+
+    // Ưu tiên props truyền vào (nếu có), nếu không thì dùng data từ hook
+    // Note: Nếu parent component (Page) là static thì sẽ không truyền props, lúc đó dùng hook
+    const user = propUser !== undefined ? propUser : authData?.user
+    const profile = propProfile !== undefined ? propProfile : authData?.profile
+
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -96,7 +105,9 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
                     {/* Right side - Auth State */}
                     <div className="flex items-center gap-4">
-                        {user ? (
+                        {isLoading && propUser === undefined ? (
+                            <div className="h-9 w-9 rounded-xl bg-gray-100 animate-pulse" />
+                        ) : user ? (
                             <>
                                 {/* Admin Link - Only for admins */}
                                 {profile?.role === 'admin' && (
@@ -132,7 +143,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                                             </div>
                                         )}
                                         <span className="text-sm font-medium text-gray-700 hidden lg:block">
-                                            {profile?.full_name || user.email?.split('@')[0]}
+                                            {profile?.full_name || user?.email?.split('@')[0]}
                                         </span>
                                     </button>
 
@@ -160,7 +171,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                                                             {profile?.full_name || 'User'}
                                                         </p>
                                                         <p className="text-xs text-gray-500 truncate">
-                                                            {user.email}
+                                                            {user?.email}
                                                         </p>
                                                         <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm">
                                                             {profile?.role === 'admin' ? '👑 Admin' : '🎓 Học viên'}

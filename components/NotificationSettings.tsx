@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Volume2, VolumeX, Bell } from 'lucide-react'
+import { Volume2, VolumeX, Bell, Smartphone, Check, X, Loader2 } from 'lucide-react'
 import {
     setNotificationVolume,
     setNotificationSoundEnabled,
     getNotificationSoundEnabled
 } from '@/hooks/useRealtimeNotifications'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 // Lấy volume từ localStorage
 const getStoredVolume = () => {
@@ -18,6 +19,16 @@ export default function NotificationSettings() {
     const [soundEnabled, setSoundEnabled] = useState(true)
     const [volume, setVolume] = useState(0.5)
     const [mounted, setMounted] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    
+    // Push notifications hook
+    const { 
+        isSupported: isPushSupported, 
+        isSubscribed, 
+        permissionState,
+        subscribe, 
+        unsubscribe 
+    } = usePushNotifications()
 
     // Load settings từ localStorage khi component mount
     useEffect(() => {
@@ -45,6 +56,21 @@ export default function NotificationSettings() {
         const audio = new Audio('/audio/noti.mp3')
         audio.volume = volume
         audio.play().catch(() => {})
+    }
+    
+    // Handle push notification toggle
+    const handlePushToggle = async () => {
+        setIsLoading(true)
+        try {
+            if (isSubscribed) {
+                await unsubscribe()
+            } else {
+                await subscribe()
+            }
+        } catch (error) {
+            console.error('Error toggling push:', error)
+        }
+        setIsLoading(false)
     }
 
     // Không render gì cho đến khi đã mount để tránh hydration mismatch
@@ -130,6 +156,75 @@ export default function NotificationSettings() {
                 <Volume2 className="h-4 w-4" />
                 Thử âm thanh
             </button>
+
+            {/* Push Notifications Section */}
+            {isPushSupported && (
+                <div className="pt-5 border-t border-zinc-200 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-green-50 flex items-center justify-center">
+                            <Smartphone className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-zinc-900">Push Notification</h3>
+                            <p className="text-xs text-zinc-500">Nhận thông báo ngay cả khi đóng trình duyệt</p>
+                        </div>
+                    </div>
+                    
+                    {/* Status */}
+                    <div className="flex items-center justify-between py-3 bg-zinc-50 rounded-lg px-4">
+                        <div className="flex items-center gap-2">
+                            {isSubscribed ? (
+                                <>
+                                    <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                                    <span className="text-sm text-zinc-700">Đã bật push notification</span>
+                                </>
+                            ) : permissionState === 'denied' ? (
+                                <>
+                                    <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                                    <span className="text-sm text-zinc-700">Bị chặn bởi trình duyệt</span>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="h-2 w-2 rounded-full bg-zinc-400"></div>
+                                    <span className="text-sm text-zinc-700">Chưa bật</span>
+                                </>
+                            )}
+                        </div>
+                        
+                        {permissionState !== 'denied' && (
+                            <button
+                                onClick={handlePushToggle}
+                                disabled={isLoading}
+                                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 ${
+                                    isSubscribed
+                                        ? 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300'
+                                        : 'bg-green-600 text-white hover:bg-green-700'
+                                }`}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : isSubscribed ? (
+                                    <>
+                                        <X className="h-4 w-4" />
+                                        Tắt
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="h-4 w-4" />
+                                        Bật ngay
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                    
+                    {permissionState === 'denied' && (
+                        <p className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg">
+                            ⚠️ Bạn đã chặn thông báo. Vui lòng vào cài đặt trình duyệt để bật lại quyền thông báo cho trang web này.
+                        </p>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
