@@ -43,7 +43,7 @@ For complete design system documentation, see [DESIGN_SYSTEM.md](./DESIGN_SYSTEM
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Anhnguyen0812/anannihongo
 cd Web-prj
 ```
 
